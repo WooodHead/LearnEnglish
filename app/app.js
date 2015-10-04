@@ -5,7 +5,7 @@ class App extends React.Component {
      if (node){
        node = CircularJSON.parse(node);
      } else {
-       node  = {children: []};
+       node  = {children: [], orientation: 'absolute'};
      }
     this.state = {
       node: node
@@ -19,11 +19,11 @@ class App extends React.Component {
 
 
 
-  newCursor(node, elFunc, e) {
+  newCursor(node, comp, e) {
     if (e.target.className.match(/\bchildren\b/) && document.elementFromPoint(e.clientX,e.clientY) === e.target) {
       e.preventDefault();
 
-      var domEl = elFunc();
+      var domEl = React.findDOMNode(comp.refs.children);
 
      node.children.push({
         parent: node,
@@ -73,9 +73,85 @@ class App extends React.Component {
 
   nodeClick(node, e) {
     e.stopPropagation();
-    node.focus = true;
-    this.setState({});
+    if (this.state.justEndedAction) {
+      this.state.justEndedAction = false;
+      //this.setState({});
+    } else {
+      node.focus = true;
+      this.setState({currentFocusNode: node});
+    }
   }
+
+
+
+
+
+
+  componentDidMount() {
+    document.addEventListener('mouseup', this.endAction.bind(this));
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('mouseup', this.endAction.bind(this));
+  }
+
+
+  startDrag(node, comp, floatParentComp, e) {
+    e.stopPropagation();
+
+    if (!node.focus || node.focus && e.metaKey) {
+      if(node.focus && e.metaKey){
+        e.preventDefault();
+      }
+
+      var size = React.findDOMNode(comp).getBoundingClientRect();
+
+      this.setState({
+        currentAction: 'drag',
+        currentNode: node,
+        elMouseOffset: {
+          left: e.clientX  - size.left,
+          top: e.clientY - size.top
+        },
+        currentFloatParentComp: floatParentComp
+      });
+
+    }
+  }
+
+
+  onMouseMove(hoverNode, comp, e) {
+    var currentAction = this.state.currentAction;
+    if (currentAction) {
+      e.preventDefault();
+
+      if (currentAction == 'drag') {
+
+        var node = this.state.currentNode;
+        var floatParentEl = React.findDOMNode(this.state.currentFloatParentComp.refs.children);
+
+        node.position.left = e.clientX - this.state.elMouseOffset.left + floatParentEl.scrollLeft;
+        node.position.top = e.clientY - this.state.elMouseOffset.top + floatParentEl.scrollTop;
+
+        this.setState({justEndedAction: true});
+      }
+    }
+  }
+
+  endAction(e){
+    if(this.state.currentAction) {
+      this.setState({
+        currentAction: null,
+        currentNode: null,
+        currentFloatParentComp: null
+      })
+    }
+  }
+
+
+
+
+
 
   render() {
     return (
@@ -86,6 +162,10 @@ class App extends React.Component {
                textChange={this.textChange.bind(this)}
                textSelect={this.textSelect.bind(this)}
                nodeClick={this.nodeClick.bind(this)}
+
+               startDrag={this.startDrag.bind(this)}
+               onMouseMove={this.onMouseMove.bind(this)}
+               currentAction={this.state.currentAction}
             />
           </div>
     )
@@ -159,7 +239,10 @@ class QNode extends React.Component {
     });
 
     return (
-        <div className={nodeClasses} style={node.position}>
+        <div className={nodeClasses} style={node.position}
+             onMouseDown={node.parent && this.props.startDrag.bind(null, node, this, this.props.floatParent)}
+             onMouseMoveCapture={this.props.currentAction && this.props.onMouseMove.bind(null, node, this)}
+          >
           <div className="content">
             <textarea ref="textarea" value={node.text} style={node.textareaSize}
                       onClick={this.props.nodeClick.bind(null, node)}
@@ -169,9 +252,9 @@ class QNode extends React.Component {
                   />
           </div>
 
-          <div ref="children" className="children" onClick={this.props.newCursor.bind(null, node, ()=>React.findDOMNode(this.refs.children))}>
+          <div ref="children" className="children" onClick={node.orientation == 'absolute' && this.props.newCursor.bind(null, node, this)}>
             {node.children.map(function (child, i) {
-              return <QNode {...this.props} key={i} node={child}/>
+              return <QNode {...(assign({}, this.props, node.orientation == 'absolute' ? {floatParent: this} : {}))} key={i} node={child}/>
             }.bind(this))}
           </div>
 
