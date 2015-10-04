@@ -5,7 +5,7 @@ class App extends React.Component {
      if (node){
        node = CircularJSON.parse(node);
      } else {
-       node  = {children: [], orientation: 'absolute'};
+       node  = {children: [], orientation: 'absolute', maxChildrenZIndex: 1};
      }
     this.state = {
       node: node
@@ -34,6 +34,7 @@ class App extends React.Component {
         position: {
           left: e.clientX + domEl.scrollLeft,
           top: e.clientY + domEl.scrollTop - 8,
+          zIndex: 1
         },
        textareaSize: {
          width: 10,
@@ -94,7 +95,8 @@ class App extends React.Component {
         focus: true,
         position: {
           left: e.clientX + domEl.scrollLeft - 8,
-          top: e.clientY + domEl.scrollTop - 8
+          top: e.clientY + domEl.scrollTop - 8,
+          zIndex: 1
         },
         textareaSize: {},
         children: []
@@ -154,6 +156,11 @@ class App extends React.Component {
     if (!node.focus || node.focus && e.metaKey) {
       if(node.focus && e.metaKey){
         e.preventDefault();
+      }
+
+      if (node.position.zIndex <= node.parent.maxChildrenZIndex){
+        node.position.zIndex = node.parent.maxChildrenZIndex +1;
+        node.parent.maxChildrenZIndex +=1;
       }
 
       var size = React.findDOMNode(comp).getBoundingClientRect();
