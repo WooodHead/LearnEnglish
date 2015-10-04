@@ -83,6 +83,58 @@ class App extends React.Component {
   }
 
 
+  onDrop(node, comp, e){
+
+    var domEl = React.findDOMNode(comp.refs.children);
+
+    if(e.target == domEl) {
+      node.children.push({
+        parent: node,
+        text: e.dataTransfer.getData("text/plain"),
+        focus: true,
+        position: {
+          left: e.clientX + domEl.scrollLeft - 8,
+          top: e.clientY + domEl.scrollTop - 8
+        },
+        textareaSize: {},
+        children: []
+      });
+      var focusNode = this.state.currentFocusNode;
+      if (focusNode){
+        focusNode.text = focusNode.text.slice(0, focusNode.selectionStart) + focusNode.text.slice(focusNode.selectionEnd, focusNode.text.length);
+        focusNode.selectionEnd = focusNode.selectionStart;
+      }
+      this.setState({});
+    }
+  }
+
+  onDragOver(node, comp, e){
+    var domEl = React.findDOMNode(comp.refs.children);
+    e.stopPropagation();
+    if(e.target == domEl){
+      e.preventDefault();
+    }
+  }
+
+
+  handleChildrenScroll(node, e){
+
+    if (this.state.currentAction == 'drag') {
+      var diffScrollX = e.target.scrollLeft - node.childrenScrollLeft;
+      var diffScrollY = e.target.scrollTop - node.childrenScrollTop;
+
+      var currentNode = this.state.currentNode;
+      currentNode.position.left += diffScrollX;
+      currentNode.position.top += diffScrollY;
+    }
+
+
+    node.childrenScrollLeft = e.target.scrollLeft;
+    node.childrenScrollTop = e.target.scrollTop;
+    this.setState({});
+  }
+
+
 
 
 
@@ -163,6 +215,10 @@ class App extends React.Component {
                textSelect={this.textSelect.bind(this)}
                nodeClick={this.nodeClick.bind(this)}
 
+               handleChildrenScroll={this.handleChildrenScroll.bind(this)}
+               onDrop={this.onDrop.bind(this)}
+               onDragOver={this.onDragOver.bind(this)}
+
                startDrag={this.startDrag.bind(this)}
                onMouseMove={this.onMouseMove.bind(this)}
                currentAction={this.state.currentAction}
@@ -209,6 +265,12 @@ class QNode extends React.Component {
         domEl.scrollLeft = node.scrollLeft;
       }
     }
+
+    if(this.refs.children) {
+      var domElChildren = React.findDOMNode(this.refs.children);
+      domElChildren.scrollTop = node.childrenScrollTop;
+      domElChildren.scrollLeft = node.childrenScrollLeft;
+    }
   }
 
   componentDidUpdate() {
@@ -252,7 +314,14 @@ class QNode extends React.Component {
                   />
           </div>
 
-          <div ref="children" className="children" onClick={node.orientation == 'absolute' && this.props.newCursor.bind(null, node, this)}>
+          <div ref="children" className="children"
+               onClick={node.orientation == 'absolute' && this.props.newCursor.bind(null, node, this)}
+
+               onScroll={this.props.handleChildrenScroll.bind(null, node)}
+               onDragOver={this.props.onDragOver.bind(null, node, this)}
+               onDrop={this.props.onDrop.bind(null, node, this)}
+
+            >
             {node.children.map(function (child, i) {
               return <QNode {...(assign({}, this.props, node.orientation == 'absolute' ? {floatParent: this} : {}))} key={i} node={child}/>
             }.bind(this))}
