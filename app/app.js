@@ -178,6 +178,25 @@ class App extends React.Component {
     }
   }
 
+  startResize(node, nodeElFunc, floatParentComp, resizer, e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var size = nodeElFunc().getBoundingClientRect();
+
+    this.setState({
+      currentAction: 'resize',
+      currentNode: node,
+      elMouseOffset: {
+        left: e.clientX  - size.left,
+        top: e.clientY - size.top
+      },
+      currentNodeElFunc: nodeElFunc,
+      currentFloatParentComp: floatParentComp,
+      resizer: resizer
+    });
+  }
+
 
   onMouseMove(hoverNode, comp, e) {
     var currentAction = this.state.currentAction;
@@ -193,6 +212,37 @@ class App extends React.Component {
         node.position.top = e.clientY - this.state.elMouseOffset.top + floatParentEl.scrollTop;
 
         this.setState({justEndedAction: true});
+      }
+
+
+      if (currentAction == 'resize') {
+        var node = this.state.currentNode;
+        var floatParentEl = React.findDOMNode(this.state.currentFloatParentComp.refs.children);
+        var resizer = this.state.resizer;
+        var nodePos = this.state.currentNodeElFunc().getBoundingClientRect();
+
+        if (resizer == 'width'){
+          node.width = e.clientX + floatParentEl.scrollLeft - nodePos.left
+        }
+        if (resizer == 'height'){
+          node.height = e.clientY + floatParentEl.scrollTop  - nodePos.top
+        }
+        if (resizer == 'width-height') {
+          node.width = e.clientX + floatParentEl.scrollLeft - nodePos.left;
+          node.height = e.clientY + floatParentEl.scrollTop - nodePos.top
+        }
+
+        if(resizer == 'contentHeight'){
+          if (!node.contentSize) node.contentSize = {};
+          node.contentSize.height = e.clientY + floatParentEl.scrollTop - nodePos.top
+        }
+
+        if(resizer == 'contentWidth'){
+          if (!node.contentSize) node.contentSize = {};
+          node.contentSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left
+        }
+
+        this.setState({});
       }
     }
   }
@@ -273,6 +323,11 @@ class App extends React.Component {
     this.setState({});
   }
 
+  contentScroll(node, e){
+    node.contentScrollTop = e.target.scrollTop;
+    node.contentScrollLeft = e.target.scrollLeft;
+    this.setState({});
+  }
 
 
   render() {
@@ -296,6 +351,10 @@ class App extends React.Component {
 
                textKeyDown={this.textKeyDown.bind(this)}
                expandChildren={this.expandChildren.bind(this)}
+
+
+               startResize={this.startResize.bind(this)}
+               contentScroll={this.contentScroll.bind(this)}
             />
           </div>
     )
@@ -308,6 +367,7 @@ class QNode extends React.Component {
     var node = this.props.node;
     if (this.refs.textarea) {
       var domEl = React.findDOMNode(this.refs.textarea);
+      var domElContent = React.findDOMNode(this.refs.content);
       if (node.focus) {
         if (node.selectionEnd - node.selectionStart > 0) {
           domEl.selectionStart = node.selectionStart;
@@ -322,8 +382,8 @@ class QNode extends React.Component {
             domEl.selectionEnd = node.text.length;
           }
           domEl.focus();
-          domEl.scrollTop = node.scrollTop;
-          domEl.scrollLeft = node.scrollLeft;
+          domElContent.scrollTop = node.contentScrollTop;
+          domElContent.scrollLeft = node.contentScrollLeft;
         }
 
 
@@ -335,8 +395,8 @@ class QNode extends React.Component {
         this.setState({});
 
       } else {
-        domEl.scrollTop = node.scrollTop;
-        domEl.scrollLeft = node.scrollLeft;
+        domElContent.scrollTop = node.contentScrollTop;
+        domElContent.scrollLeft = node.contentScrollLeft;
       }
     }
 
@@ -375,11 +435,11 @@ class QNode extends React.Component {
     });
 
     return (
-        <div className={nodeClasses} style={node.position}
+        <div className={nodeClasses} style={assign(node.position || {}, {height: node.height, width: node.width})}
              onMouseDown={node.parent && this.props.startDrag.bind(null, node, this, this.props.floatParent)}
              onMouseMoveCapture={this.props.currentAction && this.props.onMouseMove.bind(null, node, this)}
           >
-          <div className="content">
+          <div className={classNames('content', {hasChildren: node.children.length})} ref="content" style={node.contentSize} onScroll={this.props.contentScroll.bind(null, node)}>
 
             {node.children.length ?
             <div className={classNames("icon",  node.expanded ? "open" : "closed")}
@@ -395,6 +455,17 @@ class QNode extends React.Component {
                   />
           </div>
 
+
+
+          {node.parent && node.parent.orientation == 'vertical' && (node.parent.children.indexOf(node) == node.parent.children.length-1 || node.textareaSize.height < 50) ? null :
+            <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.content), this.props.floatParent, 'contentHeight')}>
+          </div>}
+          {node.parent && node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) == node.parent.children.length-1 ? null :
+            <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.content), this.props.floatParent, 'contentWidth')}>
+          </div>}
+
+
+
           <div ref="children" className={'children '+ node.orientation}
                onClick={node.orientation == 'absolute' && this.props.newCursor.bind(null, node, this)}
 
@@ -407,6 +478,20 @@ class QNode extends React.Component {
               return <QNode {...(assign({}, this.props, node.orientation == 'absolute' ? {floatParent: this} : {}))} key={i} node={child}/>
             }.bind(this)): null}
           </div>
+
+
+
+
+
+          {node.children.length && !(node.parent && node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) == node.parent.children.length-1) ?
+            <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this), this.props.floatParent, 'height')}></div>
+          : null}
+          {node.children.length && !(node.parent && node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) == node.parent.children.length-1) ?
+            <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this), this.props.floatParent, 'width')}></div>
+            : null}
+          {node.position ?
+            <div className="resizer resize-corner" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this), this.props.floatParent, 'width-height')}></div>
+            : null}
 
         </div>
     )

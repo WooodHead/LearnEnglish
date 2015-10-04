@@ -36,6 +36,10 @@ html, body, .app {
     display: none;
 }
 
+.app > .node > .resizer {
+    display: none;
+}
+
 
 
 
@@ -68,6 +72,7 @@ html, body, .app {
     flex: auto;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .floatNode {
@@ -92,6 +97,20 @@ html, body, .app {
 .content {
     display: flex;
     flex: auto;
+    overflow: auto;
+}
+
+.content.hasChildren{
+    flex: none
+}
+
+
+
+.children > .node {
+    flex: none;
+}
+.children > .node:last-of-type {
+    flex: auto;
 }
 
 
@@ -100,11 +119,33 @@ html, body, .app {
 
 
 
+.resize-bottom {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    cursor: ns-resize;
+    z-index: 1000;
+}
 
+.resize-right {
+    position: absolute;
+    top:0;
+    right: 0;
+    height: 100%;
+    width: 2px;
+    cursor: ew-resize;
+    z-index: 1000;
+}
 
-
-
-
+.resize-corner {
+    width: 8px;
+    height: 8px;
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    cursor: nwse-resize;
+    z-index: 1001;
+}
 
 
 
