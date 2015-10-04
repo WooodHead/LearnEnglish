@@ -1,0 +1,117 @@
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    font-size: 100%;
+    vertical-align: baseline;
+}
+body {
+    line-height: 1;
+}
+ol, ul {
+    list-style: none;
+}
+
+
+
+
+
+
+html, body, .app {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.app {
+    display: flex;
+}
+
+.app > .node {
+    border: none !important;
+}
+
+.app > .node > .content {
+    display: none;
+}
+
+
+
+
+
+
+
+
+.floatNode {
+    border: 2px solid whitesmoke;
+}
+
+.focus {
+    border: 2px solid #C3DBF8 !important;
+}
+
+.cursor {
+    border: none !important;
+}
+
+
+
+
+
+
+
+
+
+.node {
+    flex: auto;
+    display: flex;
+    background-color: white;
+}
+
+.floatNode {
+    position: absolute;
+}
+
+.children {
+    display: flex;
+    flex: auto;
+    overflow: auto;
+    position: relative;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+textarea {
+    display: flex;
+    flex: auto;
+    outline: none;
+    resize: none;
+    white-space:nowrap;
+}
+
+
+.minSize {
+    width: 10px !important;
+    height: 10px !important;
+}
