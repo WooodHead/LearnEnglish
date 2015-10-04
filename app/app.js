@@ -5,7 +5,7 @@ class App extends React.Component {
      if (node){
        node = CircularJSON.parse(node);
      } else {
-       node  = {children: [], orientation: 'absolute', maxChildrenZIndex: 1};
+       node  = {children: [], orientation: 'absolute', maxChildrenZIndex: 1, expanded: true};
      }
     this.state = {
       node: node
@@ -38,7 +38,7 @@ class App extends React.Component {
         },
        textareaSize: {
          width: 10,
-         height: 16
+         height: 17
        }
       });
       this.setState({});
@@ -158,7 +158,7 @@ class App extends React.Component {
         e.preventDefault();
       }
 
-      if (node.position.zIndex <= node.parent.maxChildrenZIndex){
+      if (node.position && node.position.zIndex <= node.parent.maxChildrenZIndex){
         node.position.zIndex = node.parent.maxChildrenZIndex +1;
         node.parent.maxChildrenZIndex +=1;
       }
@@ -208,7 +208,70 @@ class App extends React.Component {
   }
 
 
+  textKeyDown(node, e) {
+    if (e.keyCode == 13 && e.shiftKey){
+      e.preventDefault();
 
+
+      var parent;
+      if (!node.position){
+        if (e.altKey){
+          parent = node;
+        } else {
+          parent = node.parent;
+        }
+      } else {
+        if (e.altKey){
+          parent = node;
+        } else {
+
+          var newNode = {
+            expanded: true,
+            text: '',
+            textareaSize: {
+              width: 10,
+              height: 17
+            },
+            parent: node.parent,
+            children: [node],
+            position: node.position,
+            orientation: 'vertical'
+          };
+
+          node.parent.children[node.parent.children.indexOf(node)] = newNode;
+          node.position = null;
+          node.parent = newNode;
+
+          parent = newNode;
+
+        }
+      }
+
+      if (!parent.orientation) parent.orientation = 'vertical';
+      parent.expanded = true;
+
+      var index = parent.children.indexOf(node) > -1 ? parent.children.indexOf(node) + 1 : 0;
+
+      parent.children.splice(index,0 , {
+        parent: parent,
+        text: '',
+        focus: true,
+        textareaSize: {
+          width: 10,
+          height: 17
+        },
+        children: []
+      });
+      this.setState({});
+    }
+  }
+
+  expandChildren(node, e){
+    e.preventDefault();
+    e.stopPropagation();
+    node.expanded = !node.expanded;
+    this.setState({});
+  }
 
 
 
@@ -229,6 +292,10 @@ class App extends React.Component {
                startDrag={this.startDrag.bind(this)}
                onMouseMove={this.onMouseMove.bind(this)}
                currentAction={this.state.currentAction}
+
+
+               textKeyDown={this.textKeyDown.bind(this)}
+               expandChildren={this.expandChildren.bind(this)}
             />
           </div>
     )
@@ -303,8 +370,8 @@ class QNode extends React.Component {
 
     var nodeClasses = classNames('node', {
       focus: node.focus,
-      cursor: node.text == '' && !node.children.length,
-      floatNode: node.position
+      floatNode: node.position,
+      cursor: node.position && node.text == '' && !node.children.length
     });
 
     return (
@@ -313,15 +380,22 @@ class QNode extends React.Component {
              onMouseMoveCapture={this.props.currentAction && this.props.onMouseMove.bind(null, node, this)}
           >
           <div className="content">
+
+            {node.children.length ?
+            <div className={classNames("icon",  node.expanded ? "open" : "closed")}
+                 onClick={this.props.expandChildren.bind(null, node)}/>
+              :null}
+
             <textarea ref="textarea" value={node.text} style={node.textareaSize}
                       onClick={this.props.nodeClick.bind(null, node)}
                       onBlur={this.props.textBlur.bind(null, node)}
                       onChange={this.props.textChange.bind(null, node)}
                       onSelect={this.props.textSelect.bind(null, node)}
+                      onKeyDown={this.props.textKeyDown.bind(null, node)}
                   />
           </div>
 
-          <div ref="children" className="children"
+          <div ref="children" className={'children '+ node.orientation}
                onClick={node.orientation == 'absolute' && this.props.newCursor.bind(null, node, this)}
 
                onScroll={this.props.handleChildrenScroll.bind(null, node)}
@@ -329,9 +403,9 @@ class QNode extends React.Component {
                onDrop={this.props.onDrop.bind(null, node, this)}
 
             >
-            {node.children.map(function (child, i) {
+            {node.expanded ? node.children.map(function (child, i) {
               return <QNode {...(assign({}, this.props, node.orientation == 'absolute' ? {floatParent: this} : {}))} key={i} node={child}/>
-            }.bind(this))}
+            }.bind(this)): null}
           </div>
 
         </div>
