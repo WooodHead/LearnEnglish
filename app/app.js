@@ -626,7 +626,7 @@ class QNode extends React.Component {
 
 
 
-        <div ref="children" className={'children '+ node.orientation} style={node.children.length && node.expanded ?  node.childrenSize : {}}
+        <div ref="children" className={'children '+ (node.children.length && node.expanded ? node.orientation : 'noChildren')} style={node.children.length && node.expanded ?  node.childrenSize : {}}
              onClick={node.orientation == 'absolute' && this.props.newCursor.bind(null, node, this)}
 
              onScroll={this.props.handleChildrenScroll.bind(null, node)}
