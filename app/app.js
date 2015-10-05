@@ -178,7 +178,7 @@ class App extends React.Component {
     }
   }
 
-  startResize(node, nodeElFunc, floatParentComp, resizer, e) {
+  startResize(node, comp, nodeElFunc, floatParentComp, resizer, e) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -190,6 +190,7 @@ class App extends React.Component {
       currentNodeElFunc: nodeElFunc,
       currentFloatParentComp: floatParentComp,
       resizer: resizer,
+      currentComp: comp,
       mousePos: {
         top: e.clientY + React.findDOMNode(floatParentComp.refs.children).offsetTop,
         left: e.clientX + React.findDOMNode(floatParentComp.refs.children).offsetLeft
@@ -305,6 +306,15 @@ class App extends React.Component {
         var diffMouseX = e.clientX + floatParentEl.offsetLeft - this.state.mousePos.left;
         var diffMouseY = e.clientY + floatParentEl.offsetTop - this.state.mousePos.top;
 
+        var nextNode = node.parent.children[node.parent.children.indexOf(node)+1];
+
+        var splitterMode;
+        if(e.altKey && nextNode && (node.parent.orientation == 'vertical' || node.parent.orientation == 'horizontal')) {
+          splitterMode = true;
+          if (!nextNode.childrenSize) nextNode.childrenSize = {};
+          if (!nextNode.contentSize) nextNode.contentSize = {};
+        }
+
 
         if (!node.childrenSize) node.childrenSize = {};
         if (!node.contentSize) node.contentSize = {};
@@ -312,10 +322,23 @@ class App extends React.Component {
           if(!node.childrenSize.width) node.childrenSize.width = nodePos.width;
           node.childrenSize.width += diffMouseX;
 
+          if(splitterMode) {
+            if(!nextNode.contentSize.width) {
+              nextNode.contentSize.width = React.findDOMNode(this.state.currentComp.props.nextComp.refs.textarea).getBoundingClientRect().width;
+            };
+            nextNode.contentSize.width -= diffMouseX;
+          };
         }
         if (resizer == 'height'){
           if(!node.childrenSize.height) node.childrenSize.height = nodePos.height;
           node.childrenSize.height += diffMouseY;
+
+          if(splitterMode) {
+            if(!nextNode.contentSize.height) {
+              nextNode.contentSize.height = React.findDOMNode(this.state.currentComp.props.nextComp.refs.textarea).getBoundingClientRect().height;
+            };
+            nextNode.contentSize.height -= diffMouseY;
+          }
         }
         if (resizer == 'width-height') {
           if(node.children.length) {
@@ -335,11 +358,39 @@ class App extends React.Component {
         if(resizer == 'contentHeight'){
           if(!node.contentSize.height) node.contentSize.height = nodePos.height;
           node.contentSize.height += diffMouseY;
+
+          if(e.altKey){
+            if(node.children.length && node.children.expanded){
+              if(!node.childrenSize.height) node.childrenSize.height = nodePos.height;
+              node.childrenSize.height -= diffMouseY;
+            } else {
+              if(splitterMode) {
+                if(!nextNode.contentSize.height) {
+                  nextNode.contentSize.height = React.findDOMNode(this.state.currentComp.props.nextComp.refs.textarea).getBoundingClientRect().height;
+                };
+                nextNode.contentSize.height -= diffMouseY;
+              }
+            }
+          }
         }
 
         if(resizer == 'contentWidth'){
           if(!node.contentSize.width) node.contentSize.width = nodePos.width;
           node.contentSize.width += diffMouseX;
+
+          if(e.altKey){
+            if(node.children.length && node.children.expanded){
+              if(!node.childrenSize.width) node.childrenSize.width = nodePos.width;
+              node.childrenSize.width -= diffMouseX;
+            } else {
+              if(splitterMode) {
+                if(!nextNode.contentSize.width) {
+                  nextNode.contentSize.width = React.findDOMNode(this.state.currentComp.props.nextComp.refs.textarea).getBoundingClientRect().width;
+                };
+                nextNode.contentSize.width -= diffMouseX;
+              }
+            }
+          }
         }
 
         this.state.mousePos = {
@@ -561,12 +612,12 @@ class QNode extends React.Component {
         }
 
 
-        var classes = domEl.className;
+/*        var classes = domEl.className;
         domEl.className = classes + ' minSize';
         node.textareaSize.height = domEl.scrollHeight;
         node.textareaSize.width = domEl.scrollWidth;
         domEl.className = classes;
-        this.setState({});
+        this.setState({});*/
 
       } else {
         domEl.scrollTop = node.contentScrollTop;
@@ -635,10 +686,10 @@ class QNode extends React.Component {
               />
 
           {node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
-            <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentHeight')}>
+            <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node,this, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentHeight')}>
             </div>: null}
           {node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
-            <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentWidth')}>
+            <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node,this, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentWidth')}>
             </div>: null}
 
         </div>
@@ -656,7 +707,7 @@ class QNode extends React.Component {
 
           >
           {node.expanded ? node.children.map(function (child, i) {
-            return <QNode {...(assign({}, this.props, node.orientation == 'absolute' ? {floatParent: this} : {}))} key={i} node={child}/>
+            return <QNode {...(assign({}, this.props, node.orientation == 'absolute' ? {floatParent: this} : {}, {nextComp: this.refs['qnode'+(i+1)]}))} key={i} ref={'qnode'+i} node={child}/>
           }.bind(this)): null}
         </div>
 
@@ -664,13 +715,13 @@ class QNode extends React.Component {
 
 
         {node.children.length && node.expanded && node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
-          <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'height')}></div>
+          <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, this, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'height')}></div>
           :null}
         {node.children.length && node.expanded && node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
-          <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'width')}></div>
+          <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, this, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'width')}></div>
           :null}
         {node.position ?
-          <div className="resizer resize-corner" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'width-height')}></div>
+          <div className="resizer resize-corner" onMouseDown={this.props.startResize.bind(null, node, this, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'width-height')}></div>
           : null}
 
 
