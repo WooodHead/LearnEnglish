@@ -440,6 +440,7 @@ class QNode extends React.Component {
     var nodeClasses = classNames('node', {
       focus: node.focus,
       floatNode: node.position,
+      staticNode: !node.position,
       cursor: node.position && node.text == '' && !node.children.length
     });
 
@@ -448,7 +449,7 @@ class QNode extends React.Component {
            onMouseDown={node.parent && this.props.startDrag.bind(null, node, this, this.props.floatParent)}
            onMouseMoveCapture={this.props.currentAction && this.props.onMouseMove.bind(null, node, this)}
         >
-        <div className={classNames('content', {hasChildren: node.children.length && node.expanded})}>
+        <div className={classNames('content', {hasChildren: node.children.length && node.expanded}, node.orientation)}>
 
           {node.children.length ?
             <div className={classNames("icon",  node.expanded ? "open" : "closed")}

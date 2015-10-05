@@ -62,6 +62,26 @@ html, body, .app {
 
 
 
+.content.vertical.hasChildren {
+    border-bottom: 1px solid whitesmoke;
+}
+.content.horizontal.hasChildren {
+    border-right: 1px solid whitesmoke;
+}
+
+.children.vertical > .staticNode {
+    border-top: 1px solid whitesmoke;
+}
+.children.vertical > .staticNode:first-of-type {
+    border-top: none;
+}
+
+.children.horizontal > .staticNode {
+    border-left: 1px solid whitesmoke;
+}
+.children.horizontal > .staticNode:first-of-type {
+    border-left: none;
+}
 
 
 
@@ -90,7 +110,8 @@ html, body, .app {
 
 .children.vertical {
     flex-direction: column;
-    padding-left: 15px;
+    margin-left: 15px;
+    border-left: 1px solid whitesmoke;
 }
 
 .content {
