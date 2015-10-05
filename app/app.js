@@ -172,7 +172,11 @@ class App extends React.Component {
           left: e.clientX  - size.left,
           top: e.clientY - size.top
         },
-        currentFloatParentComp: floatParentComp
+        currentFloatParentComp: floatParentComp,
+        mousePos: {
+          top: e.clientY + React.findDOMNode(floatParentComp.refs.children).offsetTop,
+          left: e.clientX + React.findDOMNode(floatParentComp.refs.children).offsetLeft
+        }
       });
 
     }
@@ -193,7 +197,11 @@ class App extends React.Component {
       },
       currentNodeElFunc: nodeElFunc,
       currentFloatParentComp: floatParentComp,
-      resizer: resizer
+      resizer: resizer,
+      mousePos: {
+        top: e.clientY + React.findDOMNode(floatParentComp.refs.children).offsetTop,
+        left: e.clientX + React.findDOMNode(floatParentComp.refs.children).offsetLeft
+      }
     });
   }
 
@@ -224,7 +232,8 @@ class App extends React.Component {
           node.parent.maxChildrenZIndex +=1;
         }
 
-
+        var diffMouseX = e.clientX + floatParentEl.offsetLeft - this.state.mousePos.left;
+        var diffMouseY = e.clientY + floatParentEl.offsetTop - this.state.mousePos.top;
 
         if (this.state.inAction && hoverNode !== node && hoverNode.orientation != 'absolute') {
           this.state.inHover = true;
@@ -232,12 +241,18 @@ class App extends React.Component {
           node.position.top = e.clientY + floatParentEl.scrollTop;
         } else {
           this.state.inHover = false;
-          node.position.left = e.clientX - this.state.elMouseOffset.left + floatParentEl.scrollLeft;
-          node.position.top = e.clientY - this.state.elMouseOffset.top + floatParentEl.scrollTop;
+          //node.position.left = e.clientX - this.state.elMouseOffset.left + floatParentEl.scrollLeft;
+          //node.position.top = e.clientY - this.state.elMouseOffset.top + floatParentEl.scrollTop;
+
+          node.position.left += diffMouseX;
+          node.position.top += diffMouseY;
         }
 
 
-
+        this.state.mousePos = {
+          top: e.clientY + floatParentEl.offsetTop,
+          left: e.clientX + floatParentEl.offsetLeft
+        };
 
 
 
@@ -306,36 +321,65 @@ class App extends React.Component {
         var resizer = this.state.resizer;
         var nodePos = this.state.currentNodeElFunc().getBoundingClientRect();
 
+
+        var diffMouseX = e.clientX + floatParentEl.offsetLeft - this.state.mousePos.left;
+        var diffMouseY = e.clientY + floatParentEl.offsetTop - this.state.mousePos.top;
+
+
+        if (!node.childrenSize) node.childrenSize = {};
+        if (!node.contentSize) node.contentSize = {};
         if (resizer == 'width'){
-          if (!node.childrenSize) node.childrenSize = {};
-          node.childrenSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left
+          //node.childrenSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left;
+
+          if(!node.childrenSize.width) node.childrenSize.width = nodePos.width;
+          node.childrenSize.width += diffMouseX;
+
         }
         if (resizer == 'height'){
-          if (!node.childrenSize) node.childrenSize = {};
-          node.childrenSize.height = e.clientY + floatParentEl.scrollTop  - nodePos.top
+          //node.childrenSize.height = e.clientY + floatParentEl.scrollTop  - nodePos.top;
+
+          if(!node.childrenSize.height) node.childrenSize.height = nodePos.height;
+          node.childrenSize.height += diffMouseY;
         }
         if (resizer == 'width-height') {
           if(node.children.length) {
-            if (!node.childrenSize) node.childrenSize = {};
-            node.childrenSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left;
-            node.childrenSize.height = e.clientY + floatParentEl.scrollTop - nodePos.top
+            //node.childrenSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left;
+            //node.childrenSize.height = e.clientY + floatParentEl.scrollTop - nodePos.top
+
+            if(!node.childrenSize.width) node.childrenSize.width = nodePos.width;
+            if(!node.childrenSize.height) node.childrenSize.height = nodePos.height;
+            node.childrenSize.width += diffMouseX;
+            node.childrenSize.height += diffMouseY;
+
           } else {
-            if (!node.contentSize) node.contentSize = {};
-            node.contentSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left;
-            node.contentSize.height = e.clientY + floatParentEl.scrollTop - nodePos.top;
+            //node.contentSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left;
+            //node.contentSize.height = e.clientY + floatParentEl.scrollTop - nodePos.top;
+
+            if(!node.contentSize.width) node.contentSize.width = nodePos.width;
+            if(!node.contentSize.height) node.contentSize.height = nodePos.height;
+            node.contentSize.width += diffMouseX;
+            node.contentSize.height += diffMouseY;
           }
         }
 
         if(resizer == 'contentHeight'){
-          if (!node.contentSize) node.contentSize = {};
-          node.contentSize.height = e.clientY + floatParentEl.scrollTop - nodePos.top
+          //node.contentSize.height = e.clientY + floatParentEl.scrollTop - nodePos.top;
+
+          if(!node.contentSize.height) node.contentSize.height = nodePos.height;
+          node.contentSize.height += diffMouseY;
         }
 
         if(resizer == 'contentWidth'){
-          if (!node.contentSize) node.contentSize = {};
-          node.contentSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left
+          //node.contentSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left;
+
+          if(!node.contentSize.width) node.contentSize.width = nodePos.width;
+          node.contentSize.width += diffMouseX;
         }
 
+        this.state.mousePos = {
+          top: e.clientY + floatParentEl.offsetTop,
+          left: e.clientX + floatParentEl.offsetLeft
+        };
         this.setState({});
       }
     }
@@ -353,7 +397,8 @@ class App extends React.Component {
         currentFloatParentComp: null,
         anchor: false,
         inAction: false,
-        inHover: false
+        inHover: false,
+        mousePos: null,
       })
     }
   }
