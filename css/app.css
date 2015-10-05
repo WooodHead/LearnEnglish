@@ -205,7 +205,8 @@ html, body, .app {
 
 
 textarea {
-    padding: 2px;
+    padding-left: 2px;
+    padding-right: 2px;
     display: flex;
     flex: auto;
     outline: none;
