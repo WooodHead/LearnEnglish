@@ -229,6 +229,66 @@ class App extends React.Component {
         node.position.left = e.clientX - this.state.elMouseOffset.left + floatParentEl.scrollLeft;
         node.position.top = e.clientY - this.state.elMouseOffset.top + floatParentEl.scrollTop;
 
+
+
+
+
+
+
+
+        //find dock position
+        this.state.inAction = true;
+        var nodePos = React.findDOMNode(comp).getBoundingClientRect();
+        var side;
+        var aStyle;
+
+        if (e.pageX < nodePos.left + nodePos.width/100 * 10) {
+          side = 'left';
+        } else if (e.pageX > nodePos.left + nodePos.width - nodePos.width/100 * 10 && e.pageX < nodePos.left + nodePos.width) {
+          side = 'right'
+        } else if ((e.pageY < nodePos.top + nodePos.height/100 * 10) ||
+          nodePos.height < 25 && e.pageY < nodePos.top + nodePos.height/2) {
+          side = 'top';
+        } else if ((e.pageY > nodePos.top + nodePos.height - nodePos.height/100 * 10 && e.pageY < nodePos.top + nodePos.height) ||
+          nodePos.height < 25 && (e.pageY > nodePos.top + nodePos.height - nodePos.height/2 && e.pageY < nodePos.top + nodePos.height) ) {
+          side = 'bottom'
+        }
+        if (!e.target.className.match(/\bcontent\b/) && side && node !== hoverNode) {
+          e.stopPropagation();
+
+          aStyle = {
+            width: side == 'left' || side == 'right' ? nodePos.width/2 : nodePos.width,
+            height: side == 'top' || side == 'bottom' ? nodePos.height/2 : nodePos.height
+          };
+
+          var relatedSize = {
+            left: 'width',
+            right: 'width',
+            top: 'height',
+            bottom: 'height'
+          };
+
+          aStyle.left = side != 'right' ? nodePos.left : nodePos['left'] + nodePos[relatedSize[side]] - aStyle[relatedSize[side]];
+          aStyle.top = side != 'bottom' ? nodePos.top : nodePos['top'] + nodePos[relatedSize[side]] - aStyle[relatedSize[side]];
+
+
+          this.state.anchor = true;
+          this.state.hoverNode = hoverNode;
+          this.state.dockInfo = {
+            side: side
+          };
+          this.state.anchorStyle = aStyle
+
+        } else {
+          this.state.anchor = false;
+        }
+
+
+
+
+
+
+
         this.setState({justEndedAction: true});
       }
 
@@ -275,12 +335,73 @@ class App extends React.Component {
   }
 
   endAction(e){
+    if(this.state.currentAction == 'drag' && this.state.anchor) {
+      this.dockNode();
+    }
+
     if(this.state.currentAction) {
       this.setState({
         currentAction: null,
         currentNode: null,
-        currentFloatParentComp: null
+        currentFloatParentComp: null,
+        anchor: false,
+        inAction: false,
       })
+    }
+  }
+
+  dockNode(){
+    var node = this.state.hoverNode;
+    var side = this.state.dockInfo.side;
+
+    var currentNode = this.state.currentNode;
+
+
+    if((side == 'top' || side == 'bottom') && node.parent.orientation == 'vertical' || (side == 'left' || side == 'right') && node.parent.orientation == 'horizontal') {
+      if (side == 'top' || side == 'left') {
+        node.parent.children.splice( node.parent.children.indexOf(node), 0, currentNode)
+      } else {
+        node.parent.children.splice( node.parent.children.indexOf(node) + 1, 0, currentNode)
+      }
+
+      currentNode.parent.children.splice(currentNode.parent.children.indexOf(currentNode), 1);
+
+      currentNode.parent = node.parent;
+      currentNode.position = null;
+
+    } else {
+
+      var newNode = {
+        expanded: true,
+        text: '',
+        textareaSize: {
+          width: 10,
+          height: 16
+        },
+        parent: node.parent,
+        orientation: ((side == 'top' || side == 'bottom') && 'vertical' ) || ((side == 'left' || side == 'right') && 'horizontal' )
+      };
+
+      node.parent.children[node.parent.children.indexOf(node)] = newNode;
+
+      if(node.parent.orientation == 'absolute'){
+        newNode.position = node.position
+      }
+
+      if (side == 'top' || side == 'left') {
+        newNode.children = [currentNode, node]
+      } else {
+        newNode.children = [node, currentNode]
+      }
+
+      currentNode.position = null;
+      node.position = null;
+
+      currentNode.parent.children.splice(currentNode.parent.children.indexOf(currentNode), 1);
+
+      node.parent = newNode;
+      currentNode.parent = newNode;
+
     }
   }
 
@@ -382,7 +503,13 @@ class App extends React.Component {
 
                startResize={this.startResize.bind(this)}
                contentScroll={this.contentScroll.bind(this)}
+
+
+
+               currentNode={this.state.currentNode}
+               inAction={this.state.inAction}
             />
+          {this.state.anchor ? <div className="dockside" style={this.state.anchorStyle}></div> : null}
           </div>
     )
   }
@@ -459,7 +586,10 @@ class QNode extends React.Component {
       focus: node.focus,
       floatNode: node.position,
       staticNode: !node.position,
-      cursor: node.position && node.text == '' && !node.children.length
+      cursor: node.position && node.text == '' && !node.children.length,
+
+
+      inDrag: this.props.inAction && this.props.currentNode === node,
     });
 
     return (

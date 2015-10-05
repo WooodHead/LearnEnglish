@@ -181,7 +181,18 @@ html, body, .app {
 
 
 
+.node.inDrag {
+    pointer-events: none;
+    z-index: 2000;
+}
 
+.dockside {
+    pointer-events: none;
+    position: absolute;
+    background-color: #222222;
+    opacity: 0.5;
+    z-index: 1000;
+}
 
 
 
