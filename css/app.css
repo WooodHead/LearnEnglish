@@ -52,12 +52,12 @@ html, body, .app {
 
 .floatNode {
     /*border: 2px solid whitesmoke;*/
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
+    border-radius: 2px;
 }
 
 .focus {
-    background-color: #fdfdfd !important;
+    background-color: #fbfdd6 !important;
 }
 
 .cursor {
@@ -70,18 +70,18 @@ html, body, .app {
 
 
 .content.hasChildren {
-    border-bottom: 2px solid whitesmoke;
+    border-bottom: 2px solid #cecece;
 }
 
 .children.vertical > .staticNode {
-    border-top: 2px solid whitesmoke;
+    border-top: 2px solid #cecece;
 }
 .children.vertical > .staticNode:first-of-type {
     border-top: none;
 }
 
 .children.horizontal > .staticNode {
-    border-left: 2px solid whitesmoke;
+    border-left: 2px solid #cecece;
 }
 .children.horizontal > .staticNode:first-of-type {
     border-left: none;
@@ -115,7 +115,7 @@ html, body, .app {
 .children.vertical {
     flex-direction: column;
     margin-left: 15px;
-    border-left: 2px solid whitesmoke;
+    border-left: 2px solid #cecece;
 }
 
 .content {
