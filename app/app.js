@@ -431,6 +431,7 @@ class QNode extends React.Component {
     var nodeClasses = classNames('node', {
       focus: node.focus,
       floatNode: node.position,
+      staticNode: !node.position,
       cursor: node.position && node.text == '' && !node.children.length
     });
 
@@ -439,13 +440,14 @@ class QNode extends React.Component {
              onMouseDown={node.parent && this.props.startDrag.bind(null, node, this, this.props.floatParent)}
              onMouseMoveCapture={this.props.currentAction && this.props.onMouseMove.bind(null, node, this)}
           >
-          <div className={classNames('content', {hasChildren: node.children.length})} ref="content" style={node.contentSize} onScroll={this.props.contentScroll.bind(null, node)}>
 
+
+
+          <div className={classNames('content',{hasChildren: node.children.length})} ref="content" style={node.contentSize} onScroll={this.props.contentScroll.bind(null, node)}>
             {node.children.length ?
-            <div className={classNames("icon",  node.expanded ? "open" : "closed")}
-                 onClick={this.props.expandChildren.bind(null, node)}/>
+              <div className={classNames("icon",  node.expanded ? "open" : "closed")}
+                   onClick={this.props.expandChildren.bind(null, node)}/>
               :null}
-
             <textarea ref="textarea" value={node.text} style={node.textareaSize}
                       onClick={this.props.nodeClick.bind(null, node)}
                       onBlur={this.props.textBlur.bind(null, node)}
@@ -457,12 +459,12 @@ class QNode extends React.Component {
 
 
 
-          {node.parent && node.parent.orientation == 'vertical' && (node.parent.children.indexOf(node) == node.parent.children.length-1 || node.textareaSize.height < 50) ? null :
+          {node.parent && node.parent.orientation == 'vertical' && (node.children.length || node.parent.children.indexOf(node) != node.parent.children.length-1) ?
             <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.content), this.props.floatParent, 'contentHeight')}>
-          </div>}
-          {node.parent && node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) == node.parent.children.length-1 ? null :
+          </div>: null}
+          {node.parent && node.parent.orientation == 'horizontal' && (node.children.length || node.parent.children.indexOf(node) != node.parent.children.length-1) ?
             <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.content), this.props.floatParent, 'contentWidth')}>
-          </div>}
+          </div>: null}
 
 
 
@@ -483,12 +485,12 @@ class QNode extends React.Component {
 
 
 
-          {node.children.length && !(node.parent && node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) == node.parent.children.length-1) ?
+          {node.position || node.children.length && node.parent && node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1 ?
             <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this), this.props.floatParent, 'height')}></div>
-          : null}
-          {node.children.length && !(node.parent && node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) == node.parent.children.length-1) ?
+            :null}
+          {node.position || node.children.length && node.parent && node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1 ?
             <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this), this.props.floatParent, 'width')}></div>
-            : null}
+            :null}
           {node.position ?
             <div className="resizer resize-corner" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this), this.props.floatParent, 'width-height')}></div>
             : null}
