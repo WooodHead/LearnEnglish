@@ -225,10 +225,15 @@ class App extends React.Component {
 
 
 
-
-
-        node.position.left = e.clientX - this.state.elMouseOffset.left + floatParentEl.scrollLeft;
-        node.position.top = e.clientY - this.state.elMouseOffset.top + floatParentEl.scrollTop;
+        if (this.state.inAction && hoverNode !== node && hoverNode.orientation != 'absolute') {
+          this.state.inHover = true;
+          node.position.left = e.clientX + floatParentEl.scrollLeft;
+          node.position.top = e.clientY + floatParentEl.scrollTop;
+        } else {
+          this.state.inHover = false;
+          node.position.left = e.clientX - this.state.elMouseOffset.left + floatParentEl.scrollLeft;
+          node.position.top = e.clientY - this.state.elMouseOffset.top + floatParentEl.scrollTop;
+        }
 
 
 
@@ -347,6 +352,7 @@ class App extends React.Component {
         currentFloatParentComp: null,
         anchor: false,
         inAction: false,
+        inHover: false
       })
     }
   }
@@ -509,6 +515,7 @@ class App extends React.Component {
 
                currentNode={this.state.currentNode}
                inAction={this.state.inAction}
+               inHover={this.state.inHover}
             />
           {this.state.anchor ? <div className="dockside" style={this.state.anchorStyle}></div> : null}
           </div>
@@ -591,6 +598,7 @@ class QNode extends React.Component {
 
 
       inDrag: this.props.inAction && this.props.currentNode === node,
+      inHover: this.props.inHover && this.props.currentNode === node,
     });
 
     return (
