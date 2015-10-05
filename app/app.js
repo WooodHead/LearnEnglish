@@ -213,6 +213,7 @@ class App extends React.Component {
 
         //move up to float parent
         node.parent.children.splice(node.parent.children.indexOf(node), 1);
+        if (node.parent.orientation == 'horizontal' && node.parent.children.length == 1) node.parent.orientation = 'vertical';
         var parentNode = this.state.currentFloatParentComp.props.node;
         parentNode.children.push(node);
         node.parent = parentNode;

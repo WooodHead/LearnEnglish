@@ -62,7 +62,7 @@ html, body, .app {
 
 
 
-.content.vertical.hasChildren {
+.content.hasChildren {
     border-bottom: 1px solid whitesmoke;
 }
 .content.horizontal.hasChildren {
