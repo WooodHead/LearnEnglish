@@ -448,7 +448,7 @@ class QNode extends React.Component {
            onMouseDown={node.parent && this.props.startDrag.bind(null, node, this, this.props.floatParent)}
            onMouseMoveCapture={this.props.currentAction && this.props.onMouseMove.bind(null, node, this)}
         >
-        <div className={classNames('content', {hasChildren: node.children.length})}>
+        <div className={classNames('content', {hasChildren: node.children.length && node.expanded})}>
 
           {node.children.length ?
             <div className={classNames("icon",  node.expanded ? "open" : "closed")}
@@ -477,7 +477,7 @@ class QNode extends React.Component {
 
 
 
-        <div ref="children" className={'children '+ node.orientation} style={node.childrenSize}
+        <div ref="children" className={'children '+ node.orientation} style={node.expanded ?  node.childrenSize : {}}
              onClick={node.orientation == 'absolute' && this.props.newCursor.bind(null, node, this)}
 
              onScroll={this.props.handleChildrenScroll.bind(null, node)}
@@ -493,10 +493,10 @@ class QNode extends React.Component {
 
 
 
-        {node.children.length && node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
+        {node.children.length && node.expanded && node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
           <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'height')}></div>
           :null}
-        {node.children.length && node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
+        {node.children.length && node.expanded && node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
           <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'width')}></div>
           :null}
         {node.position ?
