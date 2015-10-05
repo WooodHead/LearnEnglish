@@ -222,14 +222,23 @@ class App extends React.Component {
         var nodePos = this.state.currentNodeElFunc().getBoundingClientRect();
 
         if (resizer == 'width'){
-          node.width = e.clientX + floatParentEl.scrollLeft - nodePos.left
+          if (!node.childrenSize) node.childrenSize = {};
+          node.childrenSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left
         }
         if (resizer == 'height'){
-          node.height = e.clientY + floatParentEl.scrollTop  - nodePos.top
+          if (!node.childrenSize) node.childrenSize = {};
+          node.childrenSize.height = e.clientY + floatParentEl.scrollTop  - nodePos.top
         }
         if (resizer == 'width-height') {
-          node.width = e.clientX + floatParentEl.scrollLeft - nodePos.left;
-          node.height = e.clientY + floatParentEl.scrollTop - nodePos.top
+          if(node.children.length) {
+            if (!node.childrenSize) node.childrenSize = {};
+            node.childrenSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left;
+            node.childrenSize.height = e.clientY + floatParentEl.scrollTop - nodePos.top
+          } else {
+            if (!node.contentSize) node.contentSize = {};
+            node.contentSize.width = e.clientX + floatParentEl.scrollLeft - nodePos.left;
+            node.contentSize.height = e.clientY + floatParentEl.scrollTop - nodePos.top;
+          }
         }
 
         if(resizer == 'contentHeight'){
@@ -367,7 +376,7 @@ class QNode extends React.Component {
     var node = this.props.node;
     if (this.refs.textarea) {
       var domEl = React.findDOMNode(this.refs.textarea);
-      var domElContent = React.findDOMNode(this.refs.content);
+      //var domElContent = React.findDOMNode(this.refs.content);
       if (node.focus) {
         if (node.selectionEnd - node.selectionStart > 0) {
           domEl.selectionStart = node.selectionStart;
@@ -382,8 +391,8 @@ class QNode extends React.Component {
             domEl.selectionEnd = node.text.length;
           }
           domEl.focus();
-          domElContent.scrollTop = node.contentScrollTop;
-          domElContent.scrollLeft = node.contentScrollLeft;
+          domEl.scrollTop = node.contentScrollTop;
+          domEl.scrollLeft = node.contentScrollLeft;
         }
 
 
@@ -395,8 +404,8 @@ class QNode extends React.Component {
         this.setState({});
 
       } else {
-        domElContent.scrollTop = node.contentScrollTop;
-        domElContent.scrollLeft = node.contentScrollLeft;
+        domEl.scrollTop = node.contentScrollTop;
+        domEl.scrollLeft = node.contentScrollLeft;
       }
     }
 
@@ -431,71 +440,73 @@ class QNode extends React.Component {
     var nodeClasses = classNames('node', {
       focus: node.focus,
       floatNode: node.position,
-      staticNode: !node.position,
       cursor: node.position && node.text == '' && !node.children.length
     });
 
     return (
-        <div className={nodeClasses} style={assign(node.position || {}, {height: node.height, width: node.width})}
-             onMouseDown={node.parent && this.props.startDrag.bind(null, node, this, this.props.floatParent)}
-             onMouseMoveCapture={this.props.currentAction && this.props.onMouseMove.bind(null, node, this)}
-          >
+      <div className={nodeClasses} style={node.position}
+           onMouseDown={node.parent && this.props.startDrag.bind(null, node, this, this.props.floatParent)}
+           onMouseMoveCapture={this.props.currentAction && this.props.onMouseMove.bind(null, node, this)}
+        >
+        <div className={classNames('content', {hasChildren: node.children.length})}>
 
+          {node.children.length ?
+            <div className={classNames("icon",  node.expanded ? "open" : "closed")}
+                 onClick={this.props.expandChildren.bind(null, node)}/>
+            :null}
 
-
-          <div className={classNames('content',{hasChildren: node.children.length})} ref="content" style={node.contentSize} onScroll={this.props.contentScroll.bind(null, node)}>
-            {node.children.length ?
-              <div className={classNames("icon",  node.expanded ? "open" : "closed")}
-                   onClick={this.props.expandChildren.bind(null, node)}/>
-              :null}
-            <textarea ref="textarea" value={node.text} style={node.textareaSize}
+            <textarea ref="textarea" value={node.text} style={assign(node.textareaSize || {}, node.contentSize || {})}
                       onClick={this.props.nodeClick.bind(null, node)}
                       onBlur={this.props.textBlur.bind(null, node)}
                       onChange={this.props.textChange.bind(null, node)}
                       onSelect={this.props.textSelect.bind(null, node)}
                       onKeyDown={this.props.textKeyDown.bind(null, node)}
-                  />
-          </div>
+                      onScroll={this.props.contentScroll.bind(null, node)}
+              />
 
-
-
-          {node.parent && node.parent.orientation == 'vertical' && (node.children.length || node.parent.children.indexOf(node) != node.parent.children.length-1) ?
-            <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.content), this.props.floatParent, 'contentHeight')}>
-          </div>: null}
-          {node.parent && node.parent.orientation == 'horizontal' && (node.children.length || node.parent.children.indexOf(node) != node.parent.children.length-1) ?
-            <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.content), this.props.floatParent, 'contentWidth')}>
-          </div>: null}
-
-
-
-          <div ref="children" className={'children '+ node.orientation}
-               onClick={node.orientation == 'absolute' && this.props.newCursor.bind(null, node, this)}
-
-               onScroll={this.props.handleChildrenScroll.bind(null, node)}
-               onDragOver={this.props.onDragOver.bind(null, node, this)}
-               onDrop={this.props.onDrop.bind(null, node, this)}
-
-            >
-            {node.expanded ? node.children.map(function (child, i) {
-              return <QNode {...(assign({}, this.props, node.orientation == 'absolute' ? {floatParent: this} : {}))} key={i} node={child}/>
-            }.bind(this)): null}
-          </div>
-
-
-
-
-
-          {node.position || node.children.length && node.parent && node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1 ?
-            <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this), this.props.floatParent, 'height')}></div>
-            :null}
-          {node.position || node.children.length && node.parent && node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1 ?
-            <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this), this.props.floatParent, 'width')}></div>
-            :null}
-          {node.position ?
-            <div className="resizer resize-corner" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this), this.props.floatParent, 'width-height')}></div>
-            : null}
+          {node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
+            <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentHeight')}>
+            </div>: null}
+          {node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
+            <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentWidth')}>
+            </div>: null}
 
         </div>
+
+
+
+
+
+        <div ref="children" className={'children '+ node.orientation} style={node.childrenSize}
+             onClick={node.orientation == 'absolute' && this.props.newCursor.bind(null, node, this)}
+
+             onScroll={this.props.handleChildrenScroll.bind(null, node)}
+             onDragOver={this.props.onDragOver.bind(null, node, this)}
+             onDrop={this.props.onDrop.bind(null, node, this)}
+
+          >
+          {node.expanded ? node.children.map(function (child, i) {
+            return <QNode {...(assign({}, this.props, node.orientation == 'absolute' ? {floatParent: this} : {}))} key={i} node={child}/>
+          }.bind(this)): null}
+        </div>
+
+
+
+
+        {node.children.length && node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
+          <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'height')}></div>
+          :null}
+        {node.children.length && node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
+          <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'width')}></div>
+          :null}
+        {node.position ?
+          <div className="resizer resize-corner" onMouseDown={this.props.startResize.bind(null, node, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'width-height')}></div>
+          : null}
+
+
+
+
+      </div>
     )
   }
 }

@@ -46,7 +46,6 @@ html, body, .app {
 
 
 
-
 .floatNode {
     border: 2px solid whitesmoke;
 }
@@ -63,13 +62,7 @@ html, body, .app {
 
 
 
-.content.hasChildren {
-    border-bottom: 1px solid whitesmoke;
-}
 
-.staticNode {
-    border-top: 1px solid whitesmoke;
-}
 
 
 
@@ -93,37 +86,41 @@ html, body, .app {
     position: relative;
 }
 
-.children.undefined {
-    flex: none;
-}
-
 
 
 .children.vertical {
     flex-direction: column;
-    margin-left: 15px;
-    border-left: 1px solid whitesmoke;
+    padding-left: 15px;
 }
-
 
 .content {
     display: flex;
     flex: auto;
-    overflow: auto;
+    position: relative;
 }
-
-.content.hasChildren{
-    flex: none
-}
-
-
-
-.children > .node {
+.content.hasChildren {
     flex: none;
 }
-.children > .node:last-of-type {
+
+
+
+.children.vertical > .node {
+    flex: none;
+}
+.children.vertical > .node:last-of-type {
     flex: auto;
 }
+.children.horizontal > .node {
+    flex: none;
+}
+.children.horizontal > .node:last-of-type {
+    flex: auto;
+}
+
+.children.undefined {
+    flex: none;
+}
+
 
 
 
@@ -133,6 +130,8 @@ html, body, .app {
 
 .resize-bottom {
     position: absolute;
+    left: 0;
+    bottom: 0;
     width: 100%;
     height: 2px;
     cursor: ns-resize;
