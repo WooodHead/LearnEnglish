@@ -670,4 +670,4 @@ class QNode extends React.Component {
   }
 }
 
-React.render(<App/>, document.body);
+React.render(<App/>, document.getElementById('notes'));

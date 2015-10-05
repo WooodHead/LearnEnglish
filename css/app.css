@@ -18,7 +18,7 @@ ol, ul {
 
 
 
-html, body, .app {
+html, body, #notes, .app {
     width: 100%;
     height: 100%;
     overflow: hidden;
@@ -200,6 +200,7 @@ html, body, .app {
     background-color: #222222;
     opacity: 0.5;
     z-index: 10000;
+    transition: all 150ms ease;
 }
 
 
