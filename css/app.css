@@ -51,7 +51,9 @@ html, body, .app {
 
 
 .floatNode {
-    border: 2px solid whitesmoke;
+    /*border: 2px solid whitesmoke;*/
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
 }
 
 .focus {
@@ -59,7 +61,8 @@ html, body, .app {
 }
 
 .cursor {
-    border: none !important;
+    /*border: none !important;*/
+    box-shadow: none !important;
     background-color: white !important;
 }
 
@@ -67,21 +70,18 @@ html, body, .app {
 
 
 .content.hasChildren {
-    border-bottom: 1px solid whitesmoke;
-}
-.content.horizontal.hasChildren {
-    border-right: 1px solid whitesmoke;
+    border-bottom: 2px solid whitesmoke;
 }
 
 .children.vertical > .staticNode {
-    border-top: 1px solid whitesmoke;
+    border-top: 2px solid whitesmoke;
 }
 .children.vertical > .staticNode:first-of-type {
     border-top: none;
 }
 
 .children.horizontal > .staticNode {
-    border-left: 1px solid whitesmoke;
+    border-left: 2px solid whitesmoke;
 }
 .children.horizontal > .staticNode:first-of-type {
     border-left: none;
@@ -115,7 +115,7 @@ html, body, .app {
 .children.vertical {
     flex-direction: column;
     margin-left: 15px;
-    border-left: 1px solid whitesmoke;
+    border-left: 2px solid whitesmoke;
 }
 
 .content {
@@ -205,6 +205,7 @@ html, body, .app {
 
 
 textarea {
+    padding: 2px;
     display: flex;
     flex: auto;
     outline: none;
