@@ -40,6 +40,10 @@ html, body, .app {
     display: none;
 }
 
+.app > .node > .children {
+    flex: auto;
+}
+
 
 
 
