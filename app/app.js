@@ -217,7 +217,7 @@ class App extends React.Component {
         var parentNode = this.state.currentFloatParentComp.props.node;
         parentNode.children.push(node);
         node.parent = parentNode;
-        if(!node.position) node.position = {};
+        if(!node.position) node.position = {zIndex: 1};
 
         if (node.position.zIndex <= node.parent.maxChildrenZIndex){
           node.position.zIndex = node.parent.maxChildrenZIndex +1;
