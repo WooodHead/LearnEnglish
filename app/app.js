@@ -5,7 +5,7 @@ class App extends React.Component {
      if (node){
        node = CircularJSON.parse(node);
      } else {
-       node  = {children: [], orientation: 'absolute', maxChildrenZIndex: 1, expanded: true};
+       node  = {children: [], orientation: 'absolute', maxChildrenZIndex: 2, expanded: true};
      }
     this.state = {
       node: node
@@ -158,7 +158,7 @@ class App extends React.Component {
         e.preventDefault();
       }
 
-      if (node.position && node.position.zIndex <= node.parent.maxChildrenZIndex){
+      if (node.position && node.position.zIndex < node.parent.maxChildrenZIndex){
         node.position.zIndex = node.parent.maxChildrenZIndex +1;
         node.parent.maxChildrenZIndex +=1;
       }
@@ -219,7 +219,7 @@ class App extends React.Component {
         node.parent = parentNode;
         if(!node.position) node.position = {zIndex: 1};
 
-        if (node.position.zIndex <= node.parent.maxChildrenZIndex){
+        if (node.position.zIndex < node.parent.maxChildrenZIndex){
           node.position.zIndex = node.parent.maxChildrenZIndex +1;
           node.parent.maxChildrenZIndex +=1;
         }
