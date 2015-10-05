@@ -219,9 +219,10 @@ class App extends React.Component {
         node.parent = parentNode;
         if(!node.position) node.position = {};
 
-        node.position.zIndex = node.parent.maxChildrenZIndex +1;
-        node.parent.maxChildrenZIndex +=1;
-
+        if (node.position.zIndex <= node.parent.maxChildrenZIndex){
+          node.position.zIndex = node.parent.maxChildrenZIndex +1;
+          node.parent.maxChildrenZIndex +=1;
+        }
 
 
 

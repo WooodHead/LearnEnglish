@@ -51,7 +51,7 @@ html, body, .app {
 }
 
 .focus {
-    background-color: #f8f8f8 !important;
+    background-color: #fdfdfd !important;
 }
 
 .cursor {
@@ -195,7 +195,7 @@ html, body, .app {
     position: absolute;
     background-color: #222222;
     opacity: 0.5;
-    z-index: 1000;
+    z-index: 10000;
 }
 
 
