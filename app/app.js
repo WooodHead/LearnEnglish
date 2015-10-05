@@ -208,6 +208,24 @@ class App extends React.Component {
         var node = this.state.currentNode;
         var floatParentEl = React.findDOMNode(this.state.currentFloatParentComp.refs.children);
 
+
+
+
+        //move up to float parent
+        node.parent.children.splice(node.parent.children.indexOf(node), 1);
+        var parentNode = this.state.currentFloatParentComp.props.node;
+        parentNode.children.push(node);
+        node.parent = parentNode;
+        if(!node.position) node.position = {};
+
+        node.position.zIndex = node.parent.maxChildrenZIndex +1;
+        node.parent.maxChildrenZIndex +=1;
+
+
+
+
+
+
         node.position.left = e.clientX - this.state.elMouseOffset.left + floatParentEl.scrollLeft;
         node.position.top = e.clientY - this.state.elMouseOffset.top + floatParentEl.scrollTop;
 
@@ -478,7 +496,7 @@ class QNode extends React.Component {
 
 
 
-        <div ref="children" className={'children '+ node.orientation} style={node.expanded ?  node.childrenSize : {}}
+        <div ref="children" className={'children '+ node.orientation} style={node.children.length && node.expanded ?  node.childrenSize : {}}
              onClick={node.orientation == 'absolute' && this.props.newCursor.bind(null, node, this)}
 
              onScroll={this.props.handleChildrenScroll.bind(null, node)}
