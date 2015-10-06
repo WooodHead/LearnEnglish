@@ -6,7 +6,19 @@ class App extends React.Component {
        node = CircularJSON.parse(node);
      } else {
        var tree = {};
-       node  = assign(tree, {children: [], orientation: 'absolute', maxChildrenZIndex: 2, expanded: true, root: tree});
+       node  = assign(tree, {
+         children: [],
+         orientation: 'absolute',
+         maxChildrenZIndex: 2,
+         expanded: true,
+         root: true,
+         parent: {children: []},
+         text: '',
+         textareaSize: {
+           width: 10,
+           height: 17
+         }
+       });
      }
     this.state = {
       node: node
@@ -26,6 +38,8 @@ class App extends React.Component {
 
       var domEl = React.findDOMNode(comp.refs.children);
 
+      var domPos = domEl.getBoundingClientRect();
+
      node.children.push({
         parent: node,
         children: [],
@@ -33,8 +47,8 @@ class App extends React.Component {
         text: '',
         focus: true,
         position: {
-          left: e.clientX + domEl.scrollLeft,
-          top: e.clientY + domEl.scrollTop - 8,
+          left: e.clientX - domPos.left + domEl.scrollLeft,
+          top: e.clientY - domPos.top + domEl.scrollTop - 8,
           zIndex: 1
         },
        textareaSize: {
@@ -193,8 +207,8 @@ class App extends React.Component {
       resizer: resizer,
       currentComp: comp,
       mousePos: {
-        top: e.clientY + React.findDOMNode(floatParentComp.refs.children).offsetTop,
-        left: e.clientX + React.findDOMNode(floatParentComp.refs.children).offsetLeft
+        top: e.clientY /*+ React.findDOMNode(floatParentComp.refs.children).offsetTop*/,
+        left: e.clientX /*+ React.findDOMNode(floatParentComp.refs.children).offsetLeft*/
       }
     });
   }
@@ -209,14 +223,34 @@ class App extends React.Component {
 
         var node = this.state.currentNode;
         var floatParentEl = React.findDOMNode(this.state.currentFloatParentComp.refs.children);
+        var floatParentElPos = floatParentEl.getBoundingClientRect();
 
 
 
 
         //move up to float parent
         node.parent.children.splice(node.parent.children.indexOf(node), 1);
-        if (node.parent.orientation == 'horizontal' && node.parent.children.length == 1) node.parent.orientation = 'vertical';
-        var parentNode = this.state.currentFloatParentComp.props.node;
+
+        var nnode = node;
+        while ((nnode.parent.orientation == 'vertical' || nnode.parent.orientation == 'horizontal') && nnode.parent.children.length == 1 && nnode.parent.text == ''){
+          nnode = nnode.parent;
+          var other = nnode.children[0];
+          if(!nnode.root){
+            nnode.parent.children[nnode.parent.children.indexOf(nnode)] = other;
+          } else {
+            this.state.node = other;
+            other.root = true;
+            break;
+          }
+        }
+        if (!nnode.root && nnode.orientation == 'horizontal' && nnode.children.length == 1) nnode.orientation = 'vertical';
+
+        var parentNode;
+        if(nnode.root){
+          parentNode = this.state.node;
+        } else {
+          parentNode = this.state.currentFloatParentComp.props.node;
+        }
         parentNode.children.push(node);
         node.parent = parentNode;
         if(!node.position) node.position = {zIndex: 1};
@@ -232,8 +266,8 @@ class App extends React.Component {
           node.position.top = e.clientY + floatParentEl.scrollTop;
         } else {
           this.state.inHover = false;
-          node.position.left = e.clientX - this.state.elMouseOffset.left + floatParentEl.scrollLeft;
-          node.position.top = e.clientY - this.state.elMouseOffset.top + floatParentEl.scrollTop;
+          node.position.left = e.clientX - floatParentElPos.left - this.state.elMouseOffset.left + floatParentEl.scrollLeft;
+          node.position.top = e.clientY - floatParentElPos.top - this.state.elMouseOffset.top + floatParentEl.scrollTop;
         }
 
 
@@ -299,13 +333,13 @@ class App extends React.Component {
 
       if (currentAction == 'resize') {
         var node = this.state.currentNode;
-        var floatParentEl = React.findDOMNode(this.state.currentFloatParentComp.refs.children);
+        /*var floatParentEl = React.findDOMNode(this.state.currentFloatParentComp.refs.children);*/
         var resizer = this.state.resizer;
         var nodePos = this.state.currentNodeElFunc().getBoundingClientRect();
 
 
-        var diffMouseX = e.clientX + floatParentEl.offsetLeft - this.state.mousePos.left;
-        var diffMouseY = e.clientY + floatParentEl.offsetTop - this.state.mousePos.top;
+        var diffMouseX = e.clientX /*+ floatParentEl.offsetLeft*/ - this.state.mousePos.left;
+        var diffMouseY = e.clientY /*+ floatParentEl.offsetTop */- this.state.mousePos.top;
 
         var nextNode = node.parent.children[node.parent.children.indexOf(node)+1];
 
@@ -395,8 +429,8 @@ class App extends React.Component {
         }
 
         this.state.mousePos = {
-          top: e.clientY + floatParentEl.offsetTop,
-          left: e.clientX + floatParentEl.offsetLeft
+          top: e.clientY /*+ floatParentEl.offsetTop*/,
+          left: e.clientX /*+ floatParentEl.offsetLeft*/
         };
         this.setState({});
       }
@@ -428,7 +462,7 @@ class App extends React.Component {
     var currentNode = this.state.currentNode;
 
 
-    if((side == 'top' || side == 'bottom') && node.parent.orientation == 'vertical' || (side == 'left' || side == 'right') && node.parent.orientation == 'horizontal') {
+    if(!node.root && ((side == 'top' || side == 'bottom') && node.parent.orientation == 'vertical' || (side == 'left' || side == 'right') && node.parent.orientation == 'horizontal')) {
       if (side == 'top' || side == 'left') {
         node.parent.children.splice( node.parent.children.indexOf(node), 0, currentNode)
       } else {
@@ -472,6 +506,12 @@ class App extends React.Component {
 
       node.parent = newNode;
       currentNode.parent = newNode;
+
+      if(node.root) {
+        this.state.node = newNode;
+        node.root = false;
+        newNode.root = true;
+      }
 
     }
   }
@@ -552,7 +592,7 @@ class App extends React.Component {
   render() {
     return (
         <div className="app">
-        <QNode node={this.state.node.root}
+        <QNode node={this.state.node}
                newCursor={this.newCursor.bind(this)}
                textBlur={this.textBlur.bind(this)}
                textChange={this.textChange.bind(this)}
@@ -665,7 +705,7 @@ class QNode extends React.Component {
 
       inDrag: this.props.inAction && this.props.currentNode === node,
       inHover: this.props.inHover && this.props.currentNode === node,
-    });
+    }, node.orientation);
 
     return (
       <div className={nodeClasses} style={node.position}
@@ -711,7 +751,7 @@ class QNode extends React.Component {
 
           >
           {node.expanded ? node.children.map(function (child, i) {
-            return <QNode {...(assign({}, this.props, node.orientation == 'absolute' ? {floatParent: this} : {}, {nextComp: this.refs['qnode'+(i+1)]}))} key={i} ref={'qnode'+i} node={child}/>
+            return <QNode {...(assign({}, this.props, node.orientation == 'absolute' || node.root ? {floatParent: this} : {}, {nextComp: this.refs['qnode'+(i+1)]}))} key={i} ref={'qnode'+i} node={child}/>
           }.bind(this)): null}
         </div>
 

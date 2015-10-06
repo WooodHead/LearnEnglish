@@ -44,6 +44,13 @@ html, body, #notes, .app {
     flex: auto;
 }
 
+.app > .node > .children > .node.staticNode {
+    flex: none !important;
+}
+.app > .node > .children > .node.absolute {
+    flex: auto !important;
+}
+
 
 
 
