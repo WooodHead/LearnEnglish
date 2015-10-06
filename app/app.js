@@ -612,18 +612,20 @@ class QNode extends React.Component {
           domEl.scrollLeft = node.contentScrollLeft;
         }
 
-
-/*        var classes = domEl.className;
-        domEl.className = classes + ' minSize';
-        node.textareaSize.height = domEl.scrollHeight;
-        node.textareaSize.width = domEl.scrollWidth;
-        domEl.className = classes;
-        this.setState({});*/
-
       } else {
         domEl.scrollTop = node.contentScrollTop;
         domEl.scrollLeft = node.contentScrollLeft;
       }
+
+      if(node.textareaSize) {
+        var classes = domEl.className;
+        domEl.className = classes + ' minSize';
+        node.textareaSize.height = domEl.scrollHeight;
+        node.textareaSize.width = domEl.scrollWidth;
+        domEl.className = classes;
+        this.setState({});
+      }
+
     }
 
     if(this.refs.children) {
