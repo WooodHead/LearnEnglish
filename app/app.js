@@ -677,7 +677,7 @@ class QNode extends React.Component {
                  onClick={this.props.expandChildren.bind(null, node)}/>
             :null}
 
-            <textarea ref="textarea" value={node.text} style={assign(node.textareaSize || {}, node.contentSize || {})}
+            <textarea ref="textarea" value={node.text} style={assign(node.textareaSize || {}, node.contentSize || {},node.childrenSize && node.childrenSize.width ? {width: node.childrenSize.width} : {})}
                       onClick={this.props.nodeClick.bind(null, node)}
                       onBlur={this.props.textBlur.bind(null, node)}
                       onChange={this.props.textChange.bind(null, node)}
@@ -688,9 +688,6 @@ class QNode extends React.Component {
 
           {node.parent && (node.parent.orientation == 'absolute' || node.children.length && node.expanded || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
             <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node,this, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentHeight')}>
-            </div>: null}
-          {node.parent && (node.parent.orientation == 'absolute' || node.children.length && node.expanded || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
-            <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node,this, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentWidth')}>
             </div>: null}
 
         </div>
