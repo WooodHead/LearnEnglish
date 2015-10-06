@@ -70,18 +70,18 @@ html, body, #notes, .app {
 
 
 .content.hasChildren {
-    border-bottom: 2px solid #cecece;
+    border-bottom: 1px solid #cecece;
 }
 
 .children.vertical > .staticNode {
-    border-top: 2px solid #cecece;
+    border-top: 1px solid #cecece;
 }
 .children.vertical > .staticNode:first-of-type {
     border-top: none;
 }
 
 .children.horizontal > .staticNode {
-    border-left: 2px solid #cecece;
+    border-left: 1px solid #cecece;
 }
 .children.horizontal > .staticNode:first-of-type {
     border-left: none;
@@ -115,7 +115,7 @@ html, body, #notes, .app {
 .children.vertical {
     flex-direction: column;
     margin-left: 15px;
-    border-left: 2px solid #cecece;
+    border-left: 1px solid #cecece;
 }
 
 .content {
@@ -206,8 +206,8 @@ html, body, #notes, .app {
 
 
 textarea {
-    padding-left: 2px;
-    padding-right: 2px;
+/*    padding-left: 2px;
+    padding-right: 2px;*/
     display: flex;
     flex: auto;
     outline: none;

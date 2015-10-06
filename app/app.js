@@ -690,6 +690,10 @@ class QNode extends React.Component {
             <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node,this, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentHeight')}>
             </div>: null}
 
+          {node.parent && (node.parent.orientation == 'absolute' && !(node.children.length && node.expanded) || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
+            <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node,this, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentWidth')}>
+            </div>: null}
+
         </div>
 
 
@@ -719,7 +723,7 @@ class QNode extends React.Component {
           <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, this, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'width')}></div>
           :null}
         {node.position ?
-          <div className="resizer resize-corner" onMouseDown={this.props.startResize.bind(null, node, this, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'width-height')}></div>
+          <div className="resizer resize-corner" onMouseDown={this.props.startResize.bind(null, node, this, ()=> React.findDOMNode(node.children.length && node.expanded ? this.refs.children : this.refs.textarea), this.props.floatParent, 'width-height')}></div>
           : null}
 
 
