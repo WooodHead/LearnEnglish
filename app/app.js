@@ -5,7 +5,8 @@ class App extends React.Component {
      if (node){
        node = CircularJSON.parse(node);
      } else {
-       node  = {children: [], orientation: 'absolute', maxChildrenZIndex: 2, expanded: true};
+       var tree = {};
+       node  = assign(tree, {children: [], orientation: 'absolute', maxChildrenZIndex: 2, expanded: true, root: tree});
      }
     this.state = {
       node: node
@@ -551,7 +552,7 @@ class App extends React.Component {
   render() {
     return (
         <div className="app">
-        <QNode node={this.state.node}
+        <QNode node={this.state.node.root}
                newCursor={this.newCursor.bind(this)}
                textBlur={this.textBlur.bind(this)}
                textChange={this.textChange.bind(this)}
@@ -685,10 +686,10 @@ class QNode extends React.Component {
                       onScroll={this.props.contentScroll.bind(null, node)}
               />
 
-          {node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
+          {node.parent && (node.parent.orientation == 'absolute' || node.children.length && node.expanded || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
             <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node,this, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentHeight')}>
             </div>: null}
-          {node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
+          {node.parent && (node.parent.orientation == 'absolute' || node.children.length && node.expanded || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
             <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node,this, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentWidth')}>
             </div>: null}
 
