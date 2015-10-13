@@ -3,7 +3,8 @@
 ###Simple app for manage notes
 ###Demo available [here](http://bgnorlov.github.io/NewNotes4/)
 
-###Интеграция с закладками и некоторые фиксы производительности - [demo](http://bgnorlov.github.io/MyBookmarks)
+
+Интеграция с закладками и некоторые фиксы производительности - [demo](http://bgnorlov.github.io/MyBookmarks)
 
 Список фич:
 - ставим курсор в любом месте и печатаем
