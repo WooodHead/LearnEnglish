@@ -1,7 +1,7 @@
 # Notes
 
 ###Simple app for manage notes
-###Demo available [here](http://bgnorlov.github.io/NewNotes4/) (также небольшой [пример](http://bgnorlov.github.io/MyBookmarks) интеграции с закладками хабрахабра)
+#####Demo available [here](http://bgnorlov.github.io/NewNotes4/) (также небольшой [пример](http://bgnorlov.github.io/MyBookmarks) интеграции с закладками хабрахабра где двойным кликом открываем закладку а в контектном меню папки можно открыть их все)
 
 Список фич:
 - ставим курсор в любом месте и печатаем
