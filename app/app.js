@@ -7,7 +7,7 @@ class App extends React.Component {
      } else {
        var tree = {};
        node  = assign(tree, {
-         children: [],
+         children: [{ parent: tree, position: {top: 100, left: 100, zIndex: 1}, orientation: 'vertical', expanded: true, text: 'Существительные', textareaSize: {}, children: Object.keys(words)}],
          orientation: 'absolute',
          maxChildrenZIndex: 2,
          expanded: true,
@@ -589,6 +589,11 @@ class App extends React.Component {
   }
 
 
+  openClose(node){
+    node.open = !node.open;
+  }
+
+
   render() {
     return (
         <div className="app">
@@ -620,6 +625,9 @@ class App extends React.Component {
                currentNode={this.state.currentNode}
                inAction={this.state.inAction}
                inHover={this.state.inHover}
+
+               openClose={this.openClose.bind(this)}
+
             />
           {this.state.anchor ? <div className="dockside" style={this.state.anchorStyle}></div> : null}
           </div>
@@ -719,14 +727,36 @@ class QNode extends React.Component {
                  onClick={this.props.expandChildren.bind(null, node)}/>
             :null}
 
-            <textarea ref="textarea" value={node.text} style={assign(node.textareaSize || {}, node.contentSize || {},node.childrenSize && node.childrenSize.width ? {width: node.childrenSize.width} : {})}
+          {node.word ?
+            [<div className="wordHeader">
+              <div className={classNames("icon openClose",  node.open ? "slideUp" : "slideDown")}
+                             onClick={this.props.openClose.bind(null, node)}/>
+              <div className="word">{node.word} - {node.definitions.map((def)=> { return def.word}).slice(0, 3).join(', ')}</div>
+            </div>, <div className="wordContent">
+              <div className="definition">
+                <div className="column1">
+              {node.open && node.definitions.map((def)=>{ return (
+                  <div className="def-row">{def.word}</div>
+              )})}
+                  </div>
+                <div className="column2">
+                  {node.open && node.definitions.map((def)=>{ return (
+                      <div className="def-row"> { def.translations.join(', ')}</div>
+                    )})}
+                </div>
+              </div>
+            </div>]
+
+
+
+              : <textarea ref="textarea" value={node.text} style={assign(node.textareaSize || {}, node.contentSize || {},node.childrenSize && node.childrenSize.width ? {width: node.childrenSize.width} : {})}
                       onClick={this.props.nodeClick.bind(null, node)}
                       onBlur={this.props.textBlur.bind(null, node)}
                       onChange={this.props.textChange.bind(null, node)}
                       onSelect={this.props.textSelect.bind(null, node)}
                       onKeyDown={this.props.textKeyDown.bind(null, node)}
                       onScroll={this.props.contentScroll.bind(null, node)}
-              />
+              />}
 
           {node.parent && (node.parent.orientation == 'absolute' || node.children.length && node.expanded || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
             <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node,this, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentHeight')}>
@@ -751,7 +781,7 @@ class QNode extends React.Component {
 
           >
           {node.expanded ? node.children.map(function (child, i) {
-            return <QNode {...(assign({}, this.props, node.orientation == 'absolute' || node.root ? {floatParent: this} : {}, {nextComp: this.refs['qnode'+(i+1)]}))} key={i} ref={'qnode'+i} node={child}/>
+            return <QNode {...(assign({}, this.props, node.orientation == 'absolute' || node.root ? {floatParent: this} : {}, {nextComp: this.refs['qnode'+(i+1)]}))} key={i} ref={'qnode'+i} node={typeof child == 'string' ? words[child] : child}/>
           }.bind(this)): null}
         </div>
 

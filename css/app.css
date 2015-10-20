@@ -129,6 +129,7 @@ html, body, #notes, .app {
     display: flex;
     flex: auto;
     position: relative;
+    flex-direction: column;
 }
 .content.hasChildren {
     flex: none;
@@ -154,6 +155,32 @@ html, body, #notes, .app {
 }
 
 
+.wordHeader {
+    display: flex;
+}
+
+.definition {
+    display: flex;
+}
+
+.wordContent {
+    padding-left: 3px;
+}
+
+.def-row {
+    white-space: nowrap;
+    font-family: arial, sans-serif;
+    font-size: 13px;
+    border-bottom: 1px solid whitesmoke;
+}
+
+.column1 {
+    padding-right: 3px;
+}
+
+.column2 {
+    color: rgb(119, 119, 119);
+}
 
 
 
@@ -236,6 +263,23 @@ textarea {
     height: 15px;
     vertical-align: middle;
     text-align: center;
+}
+
+.openClose {
+    width: 10px;
+    height: 10px;
+    align-self: center;
+    margin-right: 2px;
+}
+
+.icon.slideUp {
+    background-image: url(../img/up22.png);
+    background-size: cover;
+}
+.icon.slideDown {
+    background-image: url(../img/up22.png);
+    transform: rotate(180deg);
+    background-size: cover;
 }
 
 .open::before {
