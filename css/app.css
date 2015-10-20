@@ -16,12 +16,11 @@ ol, ul {
 
 
 
-
-
 html, body, #notes, .app {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    font-family: arial, sans-serif;
 }
 
 .app {
@@ -129,7 +128,6 @@ html, body, #notes, .app {
     display: flex;
     flex: auto;
     position: relative;
-    flex-direction: column;
 }
 .content.hasChildren {
     flex: none;
@@ -169,7 +167,6 @@ html, body, #notes, .app {
 
 .def-row {
     white-space: nowrap;
-    font-family: arial, sans-serif;
     font-size: 13px;
     border-bottom: 1px solid whitesmoke;
 }
@@ -182,8 +179,41 @@ html, body, #notes, .app {
     color: rgb(119, 119, 119);
 }
 
+.column2 span {
+    margin-right: 2px;
+}
+
+.column2 span:first-of-type {
+    display: none;
+}
+
+.column2 span::after {
+    content: ',';
+    display: inline;
+}
+
+.hoverWordContent {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    background-color: white;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    display: flex;
+    position: absolute;
+    flex-direction: column;
+}
+
+.hoverWordContent .word {
+    border-bottom: 1px solid black;
+}
 
 
+.content.word {
+    background-color: hsl(206, 80%, 93%);
+    font-size: 14px;
+}
 
 
 
@@ -240,6 +270,7 @@ html, body, #notes, .app {
 
 
 textarea {
+    font-size: 14px;
 /*    padding-left: 2px;
     padding-right: 2px;*/
     display: flex;
@@ -295,4 +326,5 @@ textarea {
     color: #3C667C;
     font-size: 7px;
     display: inline-block;
+    vertical-align: middle;
 }

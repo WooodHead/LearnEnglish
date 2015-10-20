@@ -21,13 +21,22 @@ class App extends React.Component {
        });
      }
     this.state = {
-      node: node
+      node: node,
+      hoverNodes: []
     }
   }
 
   componentWillUpdate(nextProps, nextState) {
-    localStorage.setItem('node', CircularJSON.stringify(nextState.node));
+    console.log('update');
+    if (this.timeOutId) {
+      window.clearTimeout(this.timeOutId);
+    };
+    this.timeOutId = window.setTimeout(function(){
+      console.log('store');
+      localStorage.setItem('node', CircularJSON.stringify(nextState.node));
+    }.bind(this), 1000)
   }
+
 
 
 
@@ -148,7 +157,13 @@ class App extends React.Component {
 
     node.childrenScrollLeft = e.target.scrollLeft;
     node.childrenScrollTop = e.target.scrollTop;
-    this.setState({});
+    if (this.scrollTimeOutId){
+      window.clearTimeout(this.scrollTimeOutId);
+    }
+
+    this.scrollTimeOutId = window.setTimeout(function(){
+      this.setState({});
+    }.bind(this), 1000);
   }
 
 
@@ -589,8 +604,23 @@ class App extends React.Component {
   }
 
 
-  openClose(node){
-    node.open = !node.open;
+  openClose(word, hoverNode, e){
+    e.stopPropagation();
+    this.state.hoverNodes.splice(this.state.hoverNodes.indexOf(hoverNode)+1);
+    this.state.hoverNodes.push({
+      word: word,
+      position: {left: e.clientX, top: e.clientY}
+    });
+    this.setState({});
+  }
+
+  hideHoverNodes(hoverNode){
+    if(hoverNode) {
+      this.state.hoverNodes.splice(this.state.hoverNodes.indexOf(hoverNode) + 1);
+    } else {
+      this.state.hoverNodes = [];
+    }
+    this.setState({});
   }
 
 
@@ -627,9 +657,12 @@ class App extends React.Component {
                inHover={this.state.inHover}
 
                openClose={this.openClose.bind(this)}
+               hoverNodes={this.state.hoverNodes}
+               hideHoverNodes={this.hideHoverNodes.bind(this)}
 
             />
           {this.state.anchor ? <div className="dockside" style={this.state.anchorStyle}></div> : null}
+
           </div>
     )
   }
@@ -719,8 +752,10 @@ class QNode extends React.Component {
       <div className={nodeClasses} style={node.position}
            onMouseDown={node.parent && this.props.startDrag.bind(null, node, this, this.props.floatParent)}
            onMouseMoveCapture={this.props.currentAction && this.props.onMouseMove.bind(null, node, this)}
+           onClick={this.props.hideHoverNodes}
+
         >
-        <div className={classNames('content', {hasChildren: node.children.length && node.expanded}, node.orientation)}>
+        <div className={classNames('content', {hasChildren: node.children.length && node.expanded, word: node.word}, node.orientation)}>
 
           {node.children.length ?
             <div className={classNames("icon",  node.expanded ? "open" : "closed")}
@@ -728,24 +763,9 @@ class QNode extends React.Component {
             :null}
 
           {node.word ?
-            [<div className="wordHeader">
-              <div className={classNames("icon openClose",  node.open ? "slideUp" : "slideDown")}
-                             onClick={this.props.openClose.bind(null, node)}/>
-              <div className="word">{node.word} - {node.definitions.map((def)=> { return def.word}).slice(0, 3).join(', ')}</div>
-            </div>, <div className="wordContent">
-              <div className="definition">
-                <div className="column1">
-              {node.open && node.definitions.map((def)=>{ return (
-                  <div className="def-row">{def.word}</div>
-              )})}
-                  </div>
-                <div className="column2">
-                  {node.open && node.definitions.map((def)=>{ return (
-                      <div className="def-row"> { def.translations.join(', ')}</div>
-                    )})}
-                </div>
-              </div>
-            </div>]
+            <div className="wordHeader">
+              <div className="word" onClick={this.props.openClose.bind(null, node.word, null)}>{node.word} - {node.definitions.map((def)=> { return def.word}).slice(0, 3).join(', ')}</div>
+            </div>
 
 
 
@@ -781,7 +801,25 @@ class QNode extends React.Component {
 
           >
           {node.expanded ? node.children.map(function (child, i) {
-            return <QNode {...(assign({}, this.props, node.orientation == 'absolute' || node.root ? {floatParent: this} : {}, {nextComp: this.refs['qnode'+(i+1)]}))} key={i} ref={'qnode'+i} node={typeof child == 'string' ? words[child] : child}/>
+            return [<QNode {...(assign({}, this.props, node.orientation == 'absolute' || node.root ? {floatParent: this} : {}, {nextComp: this.refs['qnode'+(i+1)]}))} key={i} ref={'qnode'+i} node={typeof child == 'string' ? assign({parent: node}, words[child]) : child}/>,
+              node.orientation == 'absolute' ? this.props.hoverNodes.map(function(hoverNode, i){
+                return words[hoverNode.word] ? <div className="hoverWordContent" onClick={this.props.hideHoverNodes.bind(null, hoverNode)} style={assign({}, hoverNode.position, {zIndex: 100000+i})}>
+                  <div className="wordHeader">
+                    <div className="word">{words[hoverNode.word].word}</div>
+                  </div>
+                  <div className="definition">
+                    <div className="column1">
+                      {words[hoverNode.word].definitions.map((def)=>{ return (<div className="def-row">{def.word}</div>)})}
+                    </div>
+                    <div className="column2">
+                      {words[hoverNode.word].definitions.map((def)=>{ return (
+                          <div className="def-row"> { def.translations.map((word)=> {return <span onClick={this.props.openClose.bind(null, word, hoverNode)}>{word}</span>})}</div>
+                      )})}
+                    </div>
+                  </div>
+                </div> : null;
+              }.bind(this)) : null
+            ]
           }.bind(this)): null}
         </div>
 
