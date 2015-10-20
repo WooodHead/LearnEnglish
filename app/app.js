@@ -296,9 +296,9 @@ class App extends React.Component {
         var aStyle;
 
         if (e.pageX < nodePos.left + nodePos.width/100 * 10) {
-          side = 'left';
+          //side = 'left';
         } else if (e.pageX > nodePos.left + nodePos.width - nodePos.width/100 * 10 && e.pageX < nodePos.left + nodePos.width) {
-          side = 'right'
+          //side = 'right'
         } else if ((e.pageY < nodePos.top + nodePos.height/100 * 10) ||
           nodePos.height < 25 && e.pageY < nodePos.top + nodePos.height/2) {
           side = 'top';
@@ -338,10 +338,6 @@ class App extends React.Component {
 
 
 
-
-
-
-
         this.setState({justEndedAction: true});
       }
 
@@ -356,40 +352,11 @@ class App extends React.Component {
         var diffMouseX = e.clientX /*+ floatParentEl.offsetLeft*/ - this.state.mousePos.left;
         var diffMouseY = e.clientY /*+ floatParentEl.offsetTop */- this.state.mousePos.top;
 
-        var nextNode = node.parent.children[node.parent.children.indexOf(node)+1];
-
-        var splitterMode;
-        if(e.altKey && nextNode && (node.parent.orientation == 'vertical' || node.parent.orientation == 'horizontal')) {
-          splitterMode = true;
-          if (!nextNode.childrenSize) nextNode.childrenSize = {};
-          if (!nextNode.contentSize) nextNode.contentSize = {};
-        }
-
 
         if (!node.childrenSize) node.childrenSize = {};
         if (!node.contentSize) node.contentSize = {};
-        if (resizer == 'width'){
-          if(!node.childrenSize.width) node.childrenSize.width = nodePos.width;
-          node.childrenSize.width += diffMouseX;
 
-          if(splitterMode) {
-            if(!nextNode.contentSize.width) {
-              nextNode.contentSize.width = React.findDOMNode(this.state.currentComp.props.nextComp.refs.textarea).getBoundingClientRect().width;
-            };
-            nextNode.contentSize.width -= diffMouseX;
-          };
-        }
-        if (resizer == 'height'){
-          if(!node.childrenSize.height) node.childrenSize.height = nodePos.height;
-          node.childrenSize.height += diffMouseY;
 
-          if(splitterMode) {
-            if(!nextNode.contentSize.height) {
-              nextNode.contentSize.height = React.findDOMNode(this.state.currentComp.props.nextComp.refs.textarea).getBoundingClientRect().height;
-            };
-            nextNode.contentSize.height -= diffMouseY;
-          }
-        }
         if (resizer == 'width-height') {
           if(node.children.length) {
             if(!node.childrenSize.width) node.childrenSize.width = nodePos.width;
@@ -402,44 +369,6 @@ class App extends React.Component {
             if(!node.contentSize.height) node.contentSize.height = nodePos.height;
             node.contentSize.width += diffMouseX;
             node.contentSize.height += diffMouseY;
-          }
-        }
-
-        if(resizer == 'contentHeight'){
-          if(!node.contentSize.height) node.contentSize.height = nodePos.height;
-          node.contentSize.height += diffMouseY;
-
-          if(e.altKey){
-            if(node.children.length && node.children.expanded){
-              if(!node.childrenSize.height) node.childrenSize.height = nodePos.height;
-              node.childrenSize.height -= diffMouseY;
-            } else {
-              if(splitterMode) {
-                if(!nextNode.contentSize.height) {
-                  nextNode.contentSize.height = React.findDOMNode(this.state.currentComp.props.nextComp.refs.textarea).getBoundingClientRect().height;
-                };
-                nextNode.contentSize.height -= diffMouseY;
-              }
-            }
-          }
-        }
-
-        if(resizer == 'contentWidth'){
-          if(!node.contentSize.width) node.contentSize.width = nodePos.width;
-          node.contentSize.width += diffMouseX;
-
-          if(e.altKey){
-            if(node.children.length && node.children.expanded){
-              if(!node.childrenSize.width) node.childrenSize.width = nodePos.width;
-              node.childrenSize.width -= diffMouseX;
-            } else {
-              if(splitterMode) {
-                if(!nextNode.contentSize.width) {
-                  nextNode.contentSize.width = React.findDOMNode(this.state.currentComp.props.nextComp.refs.textarea).getBoundingClientRect().width;
-                };
-                nextNode.contentSize.width -= diffMouseX;
-              }
-            }
           }
         }
 
@@ -764,7 +693,7 @@ class QNode extends React.Component {
 
           {node.word ?
             <div className="wordHeader">
-              <div className="word" onClick={this.props.openClose.bind(null, node.word, null)}>{node.word} - {node.definitions.map((def)=> { return def.word}).slice(0, 3).join(', ')}</div>
+              <div className="word" onClick={this.props.openClose.bind(null, node.word, null)}>{this.props.attr == 'col1' ? node.word : (this.props.attr == 'col2'? node.definitions.map((def)=> { return def.word}).slice(0, 3).join(', ') : node.word + '-'+ node.definitions.map((def)=> { return def.word}).slice(0, 3).join(', '))}</div>
             </div>
 
 
@@ -777,14 +706,6 @@ class QNode extends React.Component {
                       onKeyDown={this.props.textKeyDown.bind(null, node)}
                       onScroll={this.props.contentScroll.bind(null, node)}
               />}
-
-          {node.parent && (node.parent.orientation == 'absolute' || node.children.length && node.expanded || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
-            <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node,this, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentHeight')}>
-            </div>: null}
-
-          {node.parent && (node.parent.orientation == 'absolute' && !(node.children.length && node.expanded) || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
-            <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node,this, ()=> React.findDOMNode(this.refs.textarea), this.props.floatParent, 'contentWidth')}>
-            </div>: null}
 
         </div>
 
@@ -800,38 +721,37 @@ class QNode extends React.Component {
              onDrop={this.props.onDrop.bind(null, node, this)}
 
           >
-          {node.expanded ? node.children.map(function (child, i) {
-            return [<QNode {...(assign({}, this.props, node.orientation == 'absolute' || node.root ? {floatParent: this} : {}, {nextComp: this.refs['qnode'+(i+1)]}))} key={i} ref={'qnode'+i} node={typeof child == 'string' ? assign({parent: node}, words[child]) : child}/>,
-              node.orientation == 'absolute' ? this.props.hoverNodes.map(function(hoverNode, i){
-                return words[hoverNode.word] ? <div className="hoverWordContent" onClick={this.props.hideHoverNodes.bind(null, hoverNode)} style={assign({}, hoverNode.position, {zIndex: 100000+i})}>
-                  <div className="wordHeader">
-                    <div className="word">{words[hoverNode.word].word}</div>
-                  </div>
-                  <div className="definition">
-                    <div className="column1">
-                      {words[hoverNode.word].definitions.map((def)=>{ return (<div className="def-row">{def.word}</div>)})}
-                    </div>
-                    <div className="column2">
-                      {words[hoverNode.word].definitions.map((def)=>{ return (
-                          <div className="def-row"> { def.translations.map((word)=> {return <span onClick={this.props.openClose.bind(null, word, hoverNode)}>{word}</span>})}</div>
-                      )})}
-                    </div>
-                  </div>
-                </div> : null;
-              }.bind(this)) : null
-            ]
-          }.bind(this)): null}
+          {node.orientation !='vertical' && node.expanded  ? node.children.map(function (child, i) {
+            return (<QNode {...(assign({}, this.props, node.orientation == 'absolute' || node.root ? {floatParent: this} : {}, {nextComp: this.refs['qnode'+(i+1)]}))} key={i} ref={'qnode'+i} node={typeof child == 'string' ? assign({parent: node}, words[child]) : child}/>)
+          }.bind(this)): <div className="childrenTable"><div className="column1">{node.expanded  ? node.children.map(function (child, i){
+            return (<QNode {...(assign({}, this.props, node.orientation == 'absolute' || node.root ? {floatParent: this} : {}, {attr: 'col1', nextComp: this.refs['qnode'+(i+1)]}))} key={i} ref={'qnode'+i} node={typeof child == 'string' ? assign({parent: node}, words[child]) : child}/>)
+          }.bind(this)): null}</div><div className="column2">{node.expanded  ? node.children.map(function (child, i){
+            return (<QNode {...(assign({}, this.props, node.orientation == 'absolute' || node.root ? {floatParent: this} : {}, {attr: 'col2', nextComp: this.refs['qnode'+(i+1)]}))} key={i} ref={'qnode'+i} node={typeof child == 'string' ? assign({parent: node}, words[child]) : child}/>)
+          }.bind(this)): null}</div></div>
+
+            }
+
+          {node.orientation == 'absolute' ? this.props.hoverNodes.map(function(hoverNode, i){
+            return words[hoverNode.word] ? <div className="hoverWordContent" onClick={this.props.hideHoverNodes.bind(null, hoverNode)} style={assign({}, hoverNode.position, {zIndex: 100000+i})}>
+              <div className="wordHeader">
+                <div className="word">{words[hoverNode.word].word}</div>
+              </div>
+              <div className="definition">
+                <div className="column1">
+                  {words[hoverNode.word].definitions.map((def)=>{ return (<div className="def-row">{def.word}</div>)})}
+                </div>
+                <div className="column2">
+                  {words[hoverNode.word].definitions.map((def)=>{ return (
+                      <div className="def-row"> { def.translations.map((word)=> {return <span onClick={this.props.openClose.bind(null, word, hoverNode)}>{word}</span>})}</div>
+                  )})}
+                </div>
+              </div>
+            </div> : null;
+          }.bind(this)) : null}
         </div>
 
 
 
-
-        {node.children.length && node.expanded && node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'vertical' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
-          <div className="resizer resize-bottom" onMouseDown={this.props.startResize.bind(null, node, this, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'height')}></div>
-          :null}
-        {node.children.length && node.expanded && node.parent && (node.parent.orientation == 'absolute' || node.parent.orientation == 'horizontal' && node.parent.children.indexOf(node) != node.parent.children.length-1) ?
-          <div className="resizer resize-right" onMouseDown={this.props.startResize.bind(null, node, this, ()=> React.findDOMNode(this.refs.children), this.props.floatParent, 'width')}></div>
-          :null}
         {node.position ?
           <div className="resizer resize-corner" onMouseDown={this.props.startResize.bind(null, node, this, ()=> React.findDOMNode(node.children.length && node.expanded ? this.refs.children : this.refs.textarea), this.props.floatParent, 'width-height')}></div>
           : null}

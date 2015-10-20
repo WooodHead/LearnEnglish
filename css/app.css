@@ -173,11 +173,24 @@ html, body, #notes, .app {
 
 .column1 {
     padding-right: 3px;
+    color: rgb(119, 119, 119);
 }
 
 .column2 {
+}
+
+
+.hoverWordContent .column1 {
+    color: black;
+}
+
+.hoverWordContent .column2 {
     color: rgb(119, 119, 119);
 }
+
+
+
+
 
 .column2 span {
     margin-right: 2px;
@@ -211,31 +224,25 @@ html, body, #notes, .app {
 
 
 .content.word {
-    background-color: hsl(206, 80%, 93%);
     font-size: 14px;
+    border-bottom: 1px solid whitesmoke;
 }
 
 
 
-.resize-bottom {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 2px;
-    cursor: ns-resize;
-    z-index: 1000;
+.childrenTable {
+    display: flex;
 }
 
-.resize-right {
-    position: absolute;
-    top:0;
-    right: 0;
-    height: 100%;
-    width: 2px;
-    cursor: ew-resize;
-    z-index: 1000;
-}
+/*.childrenTable .column1 {
+    width: 80px;
+    overflow: auto;
+}*/
+
+
+
+
+
 
 .resize-corner {
     width: 8px;
