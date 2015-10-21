@@ -27,29 +27,10 @@ html, body, #notes, .app {
     display: flex;
 }
 
-.app > .node {
-    border: none !important;
-}
-
-.app > .node > .content {
-    display: none;
-}
-
-.app > .node > .resizer {
-    display: none;
-}
-
-.app > .node > .children {
+.app > .children {
+    overflow: auto;
     flex: auto;
 }
-
-.app > .node > .children > .node.staticNode {
-    flex: none !important;
-}
-.app > .node > .children > .node.absolute {
-    flex: auto !important;
-}
-
 
 
 
@@ -194,10 +175,6 @@ html, body, #notes, .app {
 
 .column2 span {
     margin-right: 2px;
-}
-
-.column2 span:first-of-type {
-    display: none;
 }
 
 .column2 span::after {
