@@ -182,6 +182,10 @@ html, body, #notes, .app {
     display: inline;
 }
 
+.column2 > .def-row > span:first-child:after {
+    content: none;
+}
+
 .hoverWordContent {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
     border-radius: 6px;

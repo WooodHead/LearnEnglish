@@ -527,7 +527,7 @@ class App extends React.Component {
   }
 
 
-  openClose(word, hoverNode, e){
+  openClose(word, hoverNode, comp, e){
     e.stopPropagation();
     this.state.hoverNodes.splice(this.state.hoverNodes.indexOf(hoverNode)+1);
 
@@ -725,7 +725,7 @@ class QNode extends React.Component {
 
           {node.word ?
             <div className="wordHeader">
-              <div className="word" onClick={this.props.openClose.bind(null, node.word, null)}>
+              <div className="word" onClick={this.props.openClose.bind(null, node.word, null, null)}>
                 {this.props.attr == 'col1' && node.word}
                 {this.props.attr == 'col2' && node.definitions.map((def)=> { return def.word}).slice(0, 3).join(', ')}
                 {!this.props.attr && node.word + ' ' + node.definitions.map((def)=> { return def.word}).slice(0, 3).join(', ') }
