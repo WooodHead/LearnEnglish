@@ -1,7 +1,7 @@
 class App extends React.Component {
   constructor(props) {
     super(props);
-    var node = localStorage.getItem('node');
+    var node = localStorage.getItem('node3');
 
     var tree = {};
     var wordsNode = { parent: tree, position: {top: 100, left: 100, zIndex: 1}, orientation: 'vertical', expanded: true, text: 'Существительные', textareaSize: {}, children: Object.keys(words)};
@@ -36,7 +36,7 @@ class App extends React.Component {
     };
     this.timeOutId = window.setTimeout(function(){
       console.log('store');
-      localStorage.setItem('node', CircularJSON.stringify(nextState.node));
+      localStorage.setItem('node3', CircularJSON.stringify(nextState.node));
     }.bind(this), 1000)
   }
 
